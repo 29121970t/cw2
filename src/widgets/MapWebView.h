@@ -20,7 +20,8 @@ signals:
 private:
 	QWebEngineView *web;
 	QWebChannel *channel = nullptr;
-	double lat = 0.0, lon = 0.0;
+	double lat = 0.0;
+	double lon = 0.0;
 	bool pickMode = false;
 	void loadEmbedded();
 	void loadInteractive();

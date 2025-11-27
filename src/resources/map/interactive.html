@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <title>Interactive Map</title>
+    <link rel="stylesheet" href="qrc:/map/interactive.css">
+</head>
+<body data-lat="%2" data-lon="%3" data-pick="%4">
+    <div id="container">
+        <div id="map"></div>
+        <div id="error" class="hidden"></div>
+    </div>
+    <script src="qrc:///qtwebchannel/qwebchannel.js"></script>
+    <script src="qrc:/map/interactive.js"></script>
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=%1&callback=init"></script>
+</body>
+</html>
+

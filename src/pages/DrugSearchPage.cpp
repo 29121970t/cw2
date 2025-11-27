@@ -137,6 +137,7 @@ void DrugSearchPage::openPharmacies()
 	} else {
 		auto id = currentDrugId();
 		if (!id) return;
+		
 		emit openPharmaciesForDrug(id);
 	}
 }

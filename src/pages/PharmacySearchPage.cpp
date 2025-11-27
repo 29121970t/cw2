@@ -56,9 +56,9 @@ void PharmacySearchPage::setupUi()
 	connect(tbl->horizontalHeader(), &QHeaderView::sectionClicked, this, &PharmacySearchPage::onHeaderClicked);
 }
 
-void PharmacySearchPage::setDrug(quint32 drugId)
+void PharmacySearchPage::setDrug(quint32 id)
 {
-	this->drugId = drugId;
+	this->drugId = id;
 	refresh();
 }
 
@@ -342,6 +342,7 @@ void PharmacySearchPage::openDetails()
 {
 	auto id = currentPharmacyId();
 	if (!id) return;
+	
 	emit openPharmacyDetails(id, drugId);
 }
 
