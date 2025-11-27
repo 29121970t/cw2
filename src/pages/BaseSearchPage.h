@@ -15,7 +15,7 @@ public:
 
 protected:
 	// Common search setup
-	void setupSearch();
+	void setupSearch() const;
 	
 	// Accessors
 	QLineEdit* getSearchEdit() const { return searchEdit; }

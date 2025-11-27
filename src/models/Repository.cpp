@@ -45,8 +45,10 @@ bool Repository::load()
 			// read legacy layout with min/max prices and drop them
 			in >> d.id >> d.tradeName >> d.medicalName >> d.manufacturer
 			   >> d.dosageForm >> d.country >> d.prescriptionRequired;
-			double legacyMin=0, legacyMax=0;
-			in >> legacyMin >> legacyMax;
+			double legacyMin = 0;
+			double legacyMax = 0;
+			in >> legacyMin;
+			in >> legacyMax;
 		} else {
 			in >> d.id >> d.tradeName >> d.medicalName >> d.manufacturer
 			   >> d.dosageForm >> d.country >> d.prescriptionRequired;

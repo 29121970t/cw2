@@ -10,7 +10,7 @@ class MapWebView : public QWidget {
 	Q_OBJECT
 public:
 	explicit MapWebView(QWidget *parent = nullptr);
-	~MapWebView();
+	~MapWebView() override;
 	void setLocation(double latitude, double longitude);
 	void setPickMode(bool enabled) { pickMode = enabled; loadInteractive(); }
 
