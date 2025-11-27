@@ -1,0 +1,47 @@
+#pragma once
+
+#include "BaseSearchPage.h"
+#include <QTimer>
+#include "../dialogs/StockDialog.h"
+#include "../dialogs/PharmacyDialog.h"
+
+class PharmacySearchPage : public BaseSearchPage {
+	Q_OBJECT
+public:
+	explicit PharmacySearchPage(QWidget *parent = nullptr);
+
+	void setDrug(quint32 drugId);
+	void setInitialFilter(const QString &text) override;
+
+signals:
+	void openPharmacyDetails(quint32 pharmacyId, quint32 forDrugId);
+	void switchToDrugSearch(const QString &initialQuery);
+
+private slots:
+	void refresh();
+	void filterChanged(const QString &text) override;
+	void addPharmacy();
+	void editPharmacy();
+	void deletePharmacy();
+	void editPrice();
+	void openDetails();
+	void modeChanged(int index) override;
+	void onRowAdd(int row) override;
+	void onRowEdit(int row) override;
+	void onRowDelete(int row) override;
+
+private:
+	void setupUi();
+	void fillModel();
+	quint32 currentPharmacyId() const;
+	void onHeaderClicked(int section);
+
+	quint32 drugId = 0;
+	int sortSection = -1;
+	Qt::SortOrder sortOrder = Qt::AscendingOrder;
+	QTimer *openUpdateTimer = nullptr;
+	StockDialog *stockDlg = nullptr;
+	PharmacyDialog *pharmacyDlg = nullptr;
+};
+
+

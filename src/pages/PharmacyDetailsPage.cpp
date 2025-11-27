@@ -1,0 +1,189 @@
+#include "PharmacyDetailsPage.h"
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QHeaderView>
+#include "../dialogs/PharmacyDialog.h"
+#include "../dialogs/StockDialog.h"
+#include "../core/ServiceLocator.h"
+#include <QMouseEvent>
+
+PharmacyDetailsPage::PharmacyDetailsPage(QWidget *parent)
+	: BaseTablePage(parent),
+	  repo(Core::ServiceLocator::get<Models::Repository>()),
+	  labelName(new QLabel(this)),
+	  labelAddress(new QLabel(this)),
+	  labelPhone(new QLabel(this)),
+	  scheduleView(new QTableWidget(7, 2, this)),
+	  map(new Widgets::MapWebView(this)),
+	  btnEditPharmacy(new QPushButton(tr("Редактировать аптеку"), this)),
+	  stockDlg(new StockDialog(this)),
+	  pharmacyDlg(new PharmacyDialog(this))
+{
+	setupUi();
+}
+
+void PharmacyDetailsPage::setupUi()
+{
+	setupTable();
+	table->horizontalHeader()->setSectionsClickable(true);
+	table->horizontalHeader()->setSortIndicatorShown(true);
+	setupActionsDelegate();
+
+	labelName->setStyleSheet("font-weight: bold; font-size: 18px;");
+
+	// schedule view (read-only)
+	scheduleView->setHorizontalHeaderLabels({tr("День"), tr("Время")});
+	scheduleView->verticalHeader()->setVisible(false);
+	scheduleView->setEditTriggers(QAbstractItemView::NoEditTriggers);
+	scheduleView->setSelectionMode(QAbstractItemView::NoSelection);
+	scheduleView->horizontalHeader()->setStretchLastSection(true);
+	static const QStringList days = {"Понедельник","Вторник","Среда","Четверг","Пятница","Суббота","Воскресенье"};
+	for (int i=0;i<7;++i) {
+		scheduleView->setItem(i, 0, new QTableWidgetItem(days.value(i)));
+		scheduleView->item(i,0)->setFlags(Qt::ItemIsEnabled);
+		scheduleView->setItem(i, 1, new QTableWidgetItem(""));
+		scheduleView->item(i,1)->setFlags(Qt::ItemIsEnabled);
+	}
+
+	auto top = new QVBoxLayout;
+	top->addWidget(labelName);
+	top->addWidget(labelAddress);
+	top->addWidget(labelPhone);
+
+	auto left = new QVBoxLayout;
+	left->addLayout(top);
+	left->addWidget(scheduleView, 1);
+	left->addWidget(btnEditPharmacy);
+
+	auto right = new QVBoxLayout;
+	right->addWidget(map, 1);
+
+	auto grid = new QHBoxLayout;
+	grid->addLayout(left, 1);
+	grid->addLayout(right, 1);
+
+	auto v = new QVBoxLayout;
+	v->addLayout(grid, 1);
+	v->addWidget(table, 1);
+	setLayout(v);
+
+	connect(btnEditPharmacy, &QPushButton::clicked, this, &PharmacyDetailsPage::editPharmacy);
+	connect(table, &QTableView::doubleClicked, this, &PharmacyDetailsPage::editAssortmentRow);
+}
+
+void PharmacyDetailsPage::setPharmacy(quint32 pharmacyId, quint32 forDrugId)
+{
+	this->pharmacyId = pharmacyId;
+	this->forDrugId = forDrugId;
+	refresh();
+}
+
+void PharmacyDetailsPage::refresh()
+{
+	const auto *p = repo->findPharmacyConst(pharmacyId);
+	if (!p) return;
+	labelName->setText(p->name);
+	labelAddress->setText(tr("Адрес: %1").arg(p->address));
+	labelPhone->setText(tr("Телефон: %1").arg(p->phone));
+	// fill scheduleView with "HH:mm-HH:mm"
+	for (int i=0;i<scheduleView->rowCount() && i<p->hours.size(); ++i) {
+		const auto &h = p->hours[i];
+		QString text;
+		if (h.first.isValid() && h.second.isValid()) {
+			text = h.first.toString("HH:mm") + "-" + h.second.toString("HH:mm");
+		} else {
+			text = QString();
+		}
+		auto *it = scheduleView->item(i,1);
+		if (!it) {
+			it = new QTableWidgetItem;
+			scheduleView->setItem(i,1,it);
+		}
+		it->setText(text);
+	}
+	map->setLocation(p->latitude, p->longitude);
+	fillAssortment();
+}
+
+void PharmacyDetailsPage::fillAssortment()
+{
+	model->clear();
+	model->setHorizontalHeaderLabels({tr("ID преп."), tr("Наименование"), tr("МНН"), tr("Цена"), QString()});
+	for (const auto &s : repo->stocksForPharmacy(pharmacyId)) {
+		const auto *d = repo->findDrugConst(s.drugId);
+		if (!d) continue;
+		QList<QStandardItem*> row;
+		row << new QStandardItem(QString::number(d->id));
+		row << new QStandardItem(d->tradeName);
+		row << new QStandardItem(d->medicalName);
+		row << new QStandardItem(QString::number(s.price, 'f', 2));
+		row << new QStandardItem(QString());
+		model->appendRow(row);
+	}
+	applyActionsDelegateToLastColumn();
+}
+
+void PharmacyDetailsPage::editPharmacy()
+{
+	auto *p = repo->findPharmacy(pharmacyId);
+	if (!p) return;
+	pharmacyDlg->setValue(*p);
+	if (pharmacyDlg->exec() == QDialog::Accepted) {
+		*p = pharmacyDlg->value(); p->id = pharmacyId;
+		repo->updatePharmacy(*p);
+		repo->save();
+		refresh();
+	}
+}
+
+void PharmacyDetailsPage::editAssortmentRow()
+{
+	onRowEdit(table->currentIndex().row());
+}
+
+quint32 PharmacyDetailsPage::currentSelectedDrugId() const
+{
+	const auto sel = table->selectionModel()->selectedRows();
+	if (sel.isEmpty()) return 0;
+	return model->item(sel.first().row(), 0)->text().toUInt();
+}
+
+void PharmacyDetailsPage::onRowAdd(int)
+{
+	// reuse dialog, allow choosing any drug
+	stockDlg->setInitial(0, pharmacyId, 0.0, true);
+	if (stockDlg->exec() != QDialog::Accepted) return;
+	const auto v = stockDlg->value();
+	repo->setStock(v.pharmacyId, v.drugId, v.price);
+	repo->save();
+	fillAssortment();
+}
+
+void PharmacyDetailsPage::onRowEdit(int row)
+{
+	if (row < 0) return;
+	selectRow(row);
+	const quint32 drugId = currentSelectedDrugId();
+	if (!drugId) return;
+	const QString priceStr = model->item(row, 3)->text();
+	double price = priceStr.toDouble();
+	stockDlg->setInitial(drugId, pharmacyId, price, false);
+	if (stockDlg->exec() != QDialog::Accepted) return;
+	const auto v = stockDlg->value();
+	repo->setStock(v.pharmacyId, v.drugId, v.price);
+	repo->save();
+	fillAssortment();
+}
+
+void PharmacyDetailsPage::onRowDelete(int row)
+{
+	if (row < 0) return;
+	selectRow(row);
+	const quint32 drugId = currentSelectedDrugId();
+	if (!drugId) return;
+	repo->removeStock(pharmacyId, drugId);
+	repo->save();
+	fillAssortment();
+}
+
+
