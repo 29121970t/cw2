@@ -48,8 +48,8 @@ struct Pharmacy {
 	{
 		out << p.id << p.name << p.address << p.phone << p.latitude << p.longitude;
 		out << quint32(p.hours.size());
-		for (const auto &pr : p.hours) {
-			out << pr.first << pr.second;
+		for (const auto &[open, close] : p.hours) {
+			out << open << close;
 		}
 		return out;
 	}

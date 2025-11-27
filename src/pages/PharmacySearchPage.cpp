@@ -160,12 +160,12 @@ std::optional<bool> compareByPrice(const RowData &a, const RowData &b, int secti
 
 bool compareRows(const RowData &a, const RowData &b, int section, Qt::SortOrder order, int priceColumn)
 {
-	if (auto priceResult = compareByPrice(a, b, section, priceColumn, order)) {
+	if (const auto priceResult = compareByPrice(a, b, section, priceColumn, order); priceResult.has_value()) {
 		return *priceResult;
 	}
 
 	if (section < 0) {
-		if (auto openResult = compareByOpenState(a, b, Qt::AscendingOrder)) {
+		if (const auto openResult = compareByOpenState(a, b, Qt::AscendingOrder); openResult.has_value()) {
 			return *openResult;
 		}
 		return compareByName(a, b, Qt::AscendingOrder);
@@ -177,7 +177,7 @@ bool compareRows(const RowData &a, const RowData &b, int section, Qt::SortOrder 
 		case 2:
 			return compareByAddress(a, b, order);
 		case 3: {
-			if (auto openResult = compareByOpenState(a, b, order)) {
+			if (const auto openResult = compareByOpenState(a, b, order); openResult.has_value()) {
 				return *openResult;
 			}
 			return compareByName(a, b, order);

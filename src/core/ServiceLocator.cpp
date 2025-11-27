@@ -2,16 +2,19 @@
 
 namespace Core {
 
+namespace {
+inline std::unordered_map<std::type_index, std::shared_ptr<void>> g_serviceMap{};
+inline std::mutex g_serviceMtx{};
+}
+
 std::unordered_map<std::type_index, std::shared_ptr<void>>& ServiceLocator::map()
 {
-	static auto serviceMap = std::unordered_map<std::type_index, std::shared_ptr<void>>{};
-	return serviceMap;
+	return g_serviceMap;
 }
 
 std::mutex& ServiceLocator::mtx()
 {
-	static auto serviceMtx = std::mutex{};
-	return serviceMtx;
+	return g_serviceMtx;
 }
 
 } // namespace Core
