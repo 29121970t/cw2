@@ -1,12 +1,14 @@
-(function () {
+(function (root) {
     function initBridge(callback) {
-        if (!window.QWebChannel || !window.qt) {
+        const transport = root.qt?.webChannelTransport;
+        if (!root.QWebChannel || !transport) {
             callback(null);
             return;
         }
-        new QWebChannel(qt.webChannelTransport, function (channel) {
-            callback(channel.objects.bridge || null);
+        const channel = new root.QWebChannel(transport, function (instance) {
+            callback(instance.objects.bridge || null);
         });
+        return channel;
     }
 
     document.addEventListener("DOMContentLoaded", function () {
@@ -35,8 +37,8 @@
                 if (!bridge) {
                     return;
                 }
-                const lat = parseFloat(latInput.value);
-                const lon = parseFloat(lonInput.value);
+                const lat = Number.parseFloat(latInput.value);
+                const lon = Number.parseFloat(lonInput.value);
                 if (Number.isNaN(lat) || Number.isNaN(lon)) {
                     return;
                 }
@@ -44,5 +46,5 @@
             });
         });
     });
-})();
+})(globalThis);
 

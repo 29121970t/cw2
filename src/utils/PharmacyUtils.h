@@ -11,10 +11,10 @@ inline bool isPharmacyOpenNow(const Models::Pharmacy &p, const QDateTime &when =
 	if (p.hours.size() < 7) return false;
 	const int weekday = when.date().dayOfWeek(); // 1..7
 	if (weekday < 1 || weekday > p.hours.size()) return false;
-	const auto pr = p.hours[weekday-1];
-	if (!pr.first.isValid() || !pr.second.isValid()) return false;
+	const auto &[openTime, closeTime] = p.hours[weekday-1];
+	if (!openTime.isValid() || !closeTime.isValid()) return false;
 	const QTime nowT = when.time();
-	return nowT >= pr.first && nowT <= pr.second;
+	return nowT >= openTime && nowT <= closeTime;
 }
 
 }

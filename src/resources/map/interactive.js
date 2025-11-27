@@ -1,13 +1,14 @@
-(function () {
+(function (root) {
     let bridge = null;
     let map = null;
     let marker = null;
 
     function initBridge() {
-        if (!window.QWebChannel || !window.qt) {
+        const transport = root.qt?.webChannelTransport;
+        if (!root.QWebChannel || !transport) {
             return;
         }
-        new QWebChannel(qt.webChannelTransport, function (channel) {
+        return new root.QWebChannel(transport, function (channel) {
             bridge = channel.objects.bridge || null;
         });
     }
@@ -52,8 +53,8 @@
                 }
                 const latInput = document.getElementById("lat");
                 const lonInput = document.getElementById("lon");
-                const lat = parseFloat(latInput.value);
-                const lon = parseFloat(lonInput.value);
+                const lat = Number.parseFloat(latInput.value);
+                const lon = Number.parseFloat(lonInput.value);
                 if (Number.isNaN(lat) || Number.isNaN(lon)) {
                     return;
                 }
@@ -70,10 +71,10 @@
         bridge.pick(event.latLng.lat(), event.latLng.lng());
     }
 
-    window.init = function () {
+    root.init = function () {
         const body = document.body;
-        const lat = parseFloat(body.dataset.lat) || 0.0;
-        const lon = parseFloat(body.dataset.lon) || 0.0;
+        const lat = Number.parseFloat(body.dataset.lat) || 0;
+        const lon = Number.parseFloat(body.dataset.lon) || 0;
         const pickMode = body.dataset.pick === "true";
         const center = { lat, lng: lon };
 
@@ -94,10 +95,10 @@
         }
     };
 
-    window.gm_authFailure = function () {
+    root.gm_authFailure = function () {
         showError("Ошибка аутентификации Google Maps API: неверный или ограниченный ключ.");
     };
 
     initBridge();
-})();
+})(globalThis);
 

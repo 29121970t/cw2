@@ -27,7 +27,7 @@ QString loadTemplate(const QString &path)
 class MapBridge : public QObject {
 	Q_OBJECT
 public:
-	explicit MapBridge(QObject *parent=nullptr) : QObject(parent) {}
+	using QObject::QObject;
 public slots:
 	void pick(double la, double lo) {
 		emit picked(la, lo);
@@ -61,8 +61,7 @@ MapWebView::~MapWebView()
 void MapWebView::setLocation(double latitude, double longitude)
 {
 	lat = latitude; lon = longitude;
-	const QString apiKey = QProcessEnvironment::systemEnvironment().value("GOOGLE_MAPS_API_KEY");
-	if (apiKey.isEmpty()) {
+	if (const auto apiKey = QProcessEnvironment::systemEnvironment().value("GOOGLE_MAPS_API_KEY"); apiKey.isEmpty()) {
 		loadErrorPage(QString::fromUtf8("Ключ Google Maps не указан. Установите переменную окружения GOOGLE_MAPS_API_KEY. "
 		                                "Карта не будет загружена без действительного ключа."));
 		return;
