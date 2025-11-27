@@ -19,7 +19,6 @@ MainWindow::MainWindow(QWidget *parent)
 {
 	buildUi();
 	connectSignals();
-	ensureSeedData();
 	openDrugSearch();
 }
 
@@ -39,11 +38,6 @@ void MainWindow::connectSignals()
 		}
 		actionBack->setEnabled(stack->currentIndex() > 0);
 	});
-}
-
-void MainWindow::ensureSeedData()
-{
-	// repository is initialized in ServiceLocator at app startup
 }
 
 void MainWindow::openDrugSearch()

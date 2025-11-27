@@ -26,8 +26,6 @@ private slots:
 private:
 	void buildUi();
 	void connectSignals();
-	void ensureSeedData();
-
 	QStackedWidget *stack = nullptr;
 	QToolBar *toolbar = nullptr;
 	QAction *actionBack = nullptr;

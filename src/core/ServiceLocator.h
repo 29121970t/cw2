@@ -12,14 +12,14 @@ public:
 	template<typename T>
 	static void registerService(std::shared_ptr<T> instance)
 	{
-		std::lock_guard<std::mutex> lock(mtx());
+		std::scoped_lock lock(mtx());
 		map()[std::type_index(typeid(T))] = std::static_pointer_cast<void>(instance);
 	}
 
 	template<typename T>
 	static T* get()
 	{
-		std::lock_guard<std::mutex> lock(mtx());
+		std::scoped_lock lock(mtx());
 		auto it = map().find(std::type_index(typeid(T)));
 		if (it == map().end()) return nullptr;
 		return static_cast<T*>(it->second.get());
@@ -27,7 +27,7 @@ public:
 
 	static void clear()
 	{
-		std::lock_guard<std::mutex> lock(mtx());
+		std::scoped_lock lock(mtx());
 		map().clear();
 	}
 
