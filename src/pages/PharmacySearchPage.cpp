@@ -8,6 +8,8 @@
 #include <QMouseEvent>
 #include <QObject>
 #include <algorithm>
+#include <optional>
+#include <ranges>
 #include "../dialogs/PharmacyDialog.h"
 #include "../dialogs/StockDialog.h"
 #include "../utils/PharmacyUtils.h"
@@ -24,13 +26,13 @@ PharmacySearchPage::PharmacySearchPage(QWidget *parent)
 
 void PharmacySearchPage::setupUi()
 {
-	auto * const mode = getModeCombo();
+	auto *mode = getModeCombo();
 	mode->addItems({tr("По аптеке"), tr("По препарату")});
-	auto * const search = getSearchEdit();
+	auto *search = getSearchEdit();
 	search->setPlaceholderText(tr("Фильтр по названию или адресу..."));
 
 	setupTable();
-	auto * const tbl = getTable();
+	auto *tbl = getTable();
 	tbl->horizontalHeader()->setSectionsClickable(true);
 	tbl->horizontalHeader()->setSortIndicatorShown(true);
 	setupActionsDelegate();
@@ -102,53 +104,90 @@ int compareStrings(const QString &lhs, const QString &rhs, Qt::SortOrder order)
 {
 	const int cmp = lhs.localeAwareCompare(rhs);
 	if (cmp == 0) return 0;
-	return order == Qt::AscendingOrder ? (cmp < 0 ? -1 : 1) : (cmp > 0 ? -1 : 1);
+	const int sign = (cmp < 0) ? -1 : 1;
+	return order == Qt::AscendingOrder ? sign : -sign;
+}
+
+bool compareByName(const RowData &a, const RowData &b, Qt::SortOrder order)
+{
+	const int cmp = compareStrings(a.name, b.name, order);
+	if (cmp == 0) return a.id < b.id;
+	return cmp < 0;
+}
+
+bool compareByAddress(const RowData &a, const RowData &b, Qt::SortOrder order)
+{
+	const int cmp = compareStrings(a.address, b.address, order);
+	if (cmp == 0) {
+		return compareByName(a, b, Qt::AscendingOrder);
+	}
+	return cmp < 0;
+}
+
+bool compareByPhone(const RowData &a, const RowData &b, Qt::SortOrder order)
+{
+	const int cmp = compareStrings(a.phone, b.phone, order);
+	if (cmp == 0) {
+		return compareByName(a, b, Qt::AscendingOrder);
+	}
+	return cmp < 0;
+}
+
+std::optional<bool> compareByOpenState(const RowData &a, const RowData &b, Qt::SortOrder order)
+{
+	if (a.openNow == b.openNow) {
+		return std::nullopt;
+	}
+	const bool openFirst = (order == Qt::AscendingOrder) ? a.openNow : !a.openNow;
+	return openFirst;
+}
+
+std::optional<bool> compareByPrice(const RowData &a, const RowData &b, int section, int priceColumn, Qt::SortOrder order)
+{
+	if (section != priceColumn || priceColumn < 0) {
+		return std::nullopt;
+	}
+	const bool aNaN = std::isnan(a.price);
+	const bool bNaN = std::isnan(b.price);
+	if (aNaN != bNaN) {
+		return !aNaN && bNaN;
+	}
+	if (!aNaN && !bNaN && !qFuzzyCompare(a.price + 1, b.price + 1)) {
+		return order == Qt::AscendingOrder ? (a.price < b.price) : (a.price > b.price);
+	}
+	return std::nullopt;
 }
 
 bool compareRows(const RowData &a, const RowData &b, int section, Qt::SortOrder order, int priceColumn)
 {
-	if (section == priceColumn && priceColumn >= 0) {
-		const bool aNaN = std::isnan(a.price);
-		const bool bNaN = std::isnan(b.price);
-		if (aNaN != bNaN) return bNaN; // NaN always last
-		if (!aNaN && !bNaN && !qFuzzyCompare(a.price + 1, b.price + 1)) {
-			return order == Qt::AscendingOrder ? (a.price < b.price) : (a.price > b.price);
-		}
-		section = 1; // fallback to name
+	if (auto priceResult = compareByPrice(a, b, section, priceColumn, order)) {
+		return *priceResult;
 	}
 
 	if (section < 0) {
-		if (a.openNow != b.openNow) {
-			return a.openNow && !b.openNow;
+		if (auto openResult = compareByOpenState(a, b, Qt::AscendingOrder)) {
+			return *openResult;
 		}
-		return compareRows(a, b, 1, Qt::AscendingOrder, priceColumn);
+		return compareByName(a, b, Qt::AscendingOrder);
 	}
 
 	switch (section) {
-		case 1: {
-			const int cmp = compareStrings(a.name, b.name, order);
-			return cmp == 0 ? a.id < b.id : (cmp < 0);
-		}
-		case 2: {
-			const int cmp = compareStrings(a.address, b.address, order);
-			return cmp == 0 ? a.name.localeAwareCompare(b.name) < 0 : (cmp < 0);
-		}
+		case 1:
+			return compareByName(a, b, order);
+		case 2:
+			return compareByAddress(a, b, order);
 		case 3: {
-			if (a.openNow != b.openNow) {
-				return order == Qt::AscendingOrder ? (a.openNow && !b.openNow)
-				                                   : (!a.openNow && b.openNow);
+			if (auto openResult = compareByOpenState(a, b, order)) {
+				return *openResult;
 			}
-			return compareRows(a, b, 1, order, priceColumn);
+			return compareByName(a, b, order);
 		}
-		case 4: {
-			const int cmp = compareStrings(a.phone, b.phone, order);
-			return cmp == 0 ? a.name.localeAwareCompare(b.name) < 0 : (cmp < 0);
-		}
+		case 4:
+			return compareByPhone(a, b, order);
 		default:
-			return compareRows(a, b, 1, order, priceColumn);
+			return compareByName(a, b, order);
 	}
 }
-
 QVector<RowData> collectRows(const Models::Repository *repository, quint32 drugId, const QString &filter)
 {
 	QVector<RowData> rows;
@@ -176,7 +215,7 @@ void sortRows(QVector<RowData> &rows, int sortSection, Qt::SortOrder order, int 
 	const auto comparator = [sortSection, order, priceColumn](const RowData &lhs, const RowData &rhs) {
 		return compareRows(lhs, rhs, sortSection, order, priceColumn);
 	};
-	std::stable_sort(rows.begin(), rows.end(), comparator);
+	std::ranges::stable_sort(rows, comparator);
 }
 
 void writeRows(QStandardItemModel *model, const QVector<RowData> &rows, bool includePrice)
@@ -209,10 +248,10 @@ void writeRows(QStandardItemModel *model, const QVector<RowData> &rows, bool inc
 }
 } // namespace
 
-void PharmacySearchPage::fillModel()
+void PharmacySearchPage::fillModel() const
 {
 	const QString filter = getSearchEdit()->text().trimmed();
-	auto * const repository = getRepository();
+	const auto *repository = getRepository();
 	auto rows = collectRows(repository, drugId, filter);
 	const int priceColumn = (drugId == 0 ? -1 : 5);
 	sortRows(rows, sortSection, sortOrder, priceColumn);
@@ -222,8 +261,7 @@ void PharmacySearchPage::fillModel()
 
 void PharmacySearchPage::onHeaderClicked(int section)
 {
-	const auto *mdl = getModel();
-	if (section == mdl->columnCount()-1) return; // ignore action column
+	if (const auto *modelPtr = getModel(); section == modelPtr->columnCount()-1) return; // ignore action column
 	if (sortSection == section) {
 		sortOrder = (sortOrder == Qt::AscendingOrder) ? Qt::DescendingOrder : Qt::AscendingOrder;
 	} else {

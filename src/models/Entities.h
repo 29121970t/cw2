@@ -4,6 +4,7 @@
 #include <QTime>
 #include <QVector>
 #include <QPair>
+#include <QDataStream>
 
 class QDataStream;
 
@@ -18,8 +19,19 @@ struct Drug {
 	QString country;
 	bool prescriptionRequired = false;
 
-	friend QDataStream& operator<<(QDataStream &out, const Drug &d);
-	friend QDataStream& operator>>(QDataStream &in, Drug &d);
+	friend QDataStream& operator<<(QDataStream &out, const Drug &d)
+	{
+		out << d.id << d.tradeName << d.medicalName << d.manufacturer
+		    << d.dosageForm << d.country << d.prescriptionRequired;
+		return out;
+	}
+
+	friend QDataStream& operator>>(QDataStream &in, Drug &d)
+	{
+		in >> d.id >> d.tradeName >> d.medicalName >> d.manufacturer
+		   >> d.dosageForm >> d.country >> d.prescriptionRequired;
+		return in;
+	}
 };
 
 struct Pharmacy {
@@ -32,8 +44,31 @@ struct Pharmacy {
 	// 7 entries, Mon..Sun (Qt: Monday=1)
 	QVector<QPair<QTime,QTime>> hours; // invalid times -> closed
 
-	friend QDataStream& operator<<(QDataStream &out, const Pharmacy &p);
-	friend QDataStream& operator>>(QDataStream &in, Pharmacy &p);
+	friend QDataStream& operator<<(QDataStream &out, const Pharmacy &p)
+	{
+		out << p.id << p.name << p.address << p.phone << p.latitude << p.longitude;
+		out << quint32(p.hours.size());
+		for (const auto &pr : p.hours) {
+			out << pr.first << pr.second;
+		}
+		return out;
+	}
+
+	friend QDataStream& operator>>(QDataStream &in, Pharmacy &p)
+	{
+		in >> p.id >> p.name >> p.address >> p.phone >> p.latitude >> p.longitude;
+		quint32 n = 0;
+		in >> n;
+		p.hours.clear();
+		p.hours.reserve(int(n));
+		for (quint32 i = 0; i < n; ++i) {
+			QTime open;
+			QTime close;
+			in >> open >> close;
+			p.hours.push_back({open, close});
+		}
+		return in;
+	}
 };
 
 struct Stock {
@@ -41,8 +76,17 @@ struct Stock {
 	quint32 pharmacyId = 0;
 	double price = 0.0;
 
-	friend QDataStream& operator<<(QDataStream &out, const Stock &s);
-	friend QDataStream& operator>>(QDataStream &in, Stock &s);
+	friend QDataStream& operator<<(QDataStream &out, const Stock &s)
+	{
+		out << s.drugId << s.pharmacyId << s.price;
+		return out;
+	}
+
+	friend QDataStream& operator>>(QDataStream &in, Stock &s)
+	{
+		in >> s.drugId >> s.pharmacyId >> s.price;
+		return in;
+	}
 };
 
 } // namespace Models

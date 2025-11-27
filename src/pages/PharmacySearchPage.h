@@ -31,7 +31,7 @@ private slots:
 
 private:
 	void setupUi();
-	void fillModel();
+	void fillModel() const;
 	quint32 currentPharmacyId() const;
 	void onHeaderClicked(int section);
 

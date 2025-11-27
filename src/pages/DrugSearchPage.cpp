@@ -16,28 +16,28 @@ DrugSearchPage::DrugSearchPage(QWidget *parent)
 
 void DrugSearchPage::setupUi()
 {
-	auto * const modeComboCtrl = getModeCombo();
-	auto * const searchCtrl = getSearchEdit();
-	auto * const tableView = getTable();
+	auto &modeCombo = *getModeCombo();
+	auto &searchField = *getSearchEdit();
+	auto &tableView = *getTable();
 
-	modeComboCtrl->addItems({tr("По препарату"), tr("По аптеке")});
-	searchCtrl->setPlaceholderText(tr("Поиск по названию препарата (торговому или МНН)..."));
+	modeCombo.addItems({tr("По препарату"), tr("По аптеке")});
+	searchField.setPlaceholderText(tr("Поиск по названию препарата (торговому или МНН)..."));
 
 	setupTable();
-	tableView->horizontalHeader()->setSortIndicatorShown(true);
-	tableView->setSortingEnabled(true);
+	tableView.horizontalHeader()->setSortIndicatorShown(true);
+	tableView.setSortingEnabled(true);
 	setupActionsDelegate();
 
 	auto v = Utils::QtHelpers::makeOwned<QVBoxLayout>();
 	auto top = Utils::QtHelpers::makeOwned<QHBoxLayout>();
-	top->addWidget(modeComboCtrl);
-	top->addWidget(searchCtrl, 1);
+	top->addWidget(&modeCombo);
+	top->addWidget(&searchField, 1);
 	v->addLayout(top);
-	v->addWidget(tableView, 1);
+	v->addWidget(&tableView, 1);
 	setLayout(v);
 
 	setupSearch();
-	connect(tableView, &QTableView::doubleClicked, this, &DrugSearchPage::openPharmacies);
+	connect(&tableView, &QTableView::doubleClicked, this, &DrugSearchPage::openPharmacies);
 }
 
 void DrugSearchPage::fillModel(const QVector<Models::Drug> &rows)
@@ -132,10 +132,8 @@ void DrugSearchPage::deleteDrug()
 
 void DrugSearchPage::openPharmacies()
 {
-	auto * const modeComboCtrl = getModeCombo();
-	auto * const searchCtrl = getSearchEdit();
-	if (modeComboCtrl->currentIndex() == 1) {
-		emit switchToPharmacySearch(searchCtrl->text());
+	if (getModeCombo()->currentIndex() == 1) {
+		emit switchToPharmacySearch(getSearchEdit()->text());
 	} else {
 		auto id = currentDrugId();
 		if (!id) return;
