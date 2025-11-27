@@ -7,9 +7,6 @@
 
 namespace Core {
 
-inline std::unordered_map<std::type_index, std::shared_ptr<void>> gServiceMap{};
-inline std::mutex gServiceMtx{};
-
 class ServiceLocator {
 public:
 	template<typename T>
