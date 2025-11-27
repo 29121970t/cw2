@@ -12,7 +12,7 @@ public:
 
 protected:
 	// Common dialog setup
-	void setupButtons();
+	void setupButtons() const;
 	void setupLayout();
 	
 	// Accessors

@@ -17,7 +17,7 @@ BaseDialog::BaseDialog(const QString &title, QWidget *parent)
 	setupButtons();
 }
 
-void BaseDialog::setupButtons()
+void BaseDialog::setupButtons() const
 {
 	connect(buttonBox, &QDialogButtonBox::accepted, this, &BaseDialog::onAccept);
 	connect(buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
