@@ -12,12 +12,15 @@
 #include <ranges>
 #include "../dialogs/PharmacyDialog.h"
 #include "../dialogs/StockDialog.h"
+#include "../core/ServiceLocator.h"
 #include "../utils/PharmacyUtils.h"
 #include "../utils/QtHelpers.h"
 #include <cmath>
 
 PharmacySearchPage::PharmacySearchPage(QWidget *parent)
 	: BaseSearchPage(parent),
+	  drugRepo(Core::ServiceLocator::get<Models::DrugRepository>()),
+	  pharmacyRepo(Core::ServiceLocator::get<Models::PharmacyRepository>()),
 	  stockDlg(Utils::QtHelpers::makeOwned<StockDialog>(this)),
 	  pharmacyDlg(Utils::QtHelpers::makeOwned<PharmacyDialog>(this))
 {
@@ -188,21 +191,22 @@ bool compareRows(const RowData &a, const RowData &b, int section, Qt::SortOrder 
 			return compareByName(a, b, order);
 	}
 }
-QVector<RowData> collectRows(const Models::Repository *repository, quint32 drugId, const QString &filter)
+QVector<RowData> collectRows(const Models::PharmacyRepository *pharmacyRepo, const Models::DrugRepository *drugRepo, quint32 drugId, const QString &filter)
 {
 	QVector<RowData> rows;
-	if (!repository) return rows;
+	if (!pharmacyRepo) return rows;
 
 	if (drugId == 0) {
-		const auto &pharmacies = repository->allPharmacies();
+		const auto &pharmacies = pharmacyRepo->allPharmacies();
 		rows.reserve(pharmacies.size());
 		for (const auto &pharmacy : pharmacies) {
 			if (!matchesFilter(pharmacy, filter)) continue;
 			rows.push_back(makeRow(pharmacy));
 		}
 	} else {
-		for (const auto &stock : repository->stocksForDrug(drugId)) {
-			const auto *pharmacy = repository->findPharmacyConst(stock.pharmacyId);
+		if (!drugRepo) return rows;
+		for (const auto &stock : pharmacyRepo->stocksForDrug(drugId)) {
+			const auto *pharmacy = pharmacyRepo->findPharmacyConst(stock.pharmacyId);
 			if (!pharmacy || !matchesFilter(*pharmacy, filter)) continue;
 			rows.push_back(makeRow(*pharmacy, stock.price));
 		}
@@ -251,8 +255,7 @@ void writeRows(QStandardItemModel *model, const QVector<RowData> &rows, bool inc
 void PharmacySearchPage::fillModel() const
 {
 	const QString filter = getSearchEdit()->text().trimmed();
-	const auto *repository = getRepository();
-	auto rows = collectRows(repository, drugId, filter);
+	auto rows = collectRows(pharmacyRepo, drugRepo, drugId, filter);
 	const int priceColumn = (drugId == 0 ? -1 : 5);
 	sortRows(rows, sortSection, sortOrder, priceColumn);
 
@@ -286,54 +289,54 @@ quint32 PharmacySearchPage::currentPharmacyId() const
 
 void PharmacySearchPage::addPharmacy()
 {
+	if (!pharmacyRepo) return;
 	pharmacyDlg->reset();
 	if (pharmacyDlg->exec() == QDialog::Accepted) {
 		Models::Pharmacy p = pharmacyDlg->value();
-		auto *repository = getRepository();
-		repository->addPharmacy(p);
-		repository->save();
+		pharmacyRepo->addPharmacy(p);
+		pharmacyRepo->save();
 		refresh();
 	}
 }
 
 void PharmacySearchPage::editPharmacy()
 {
+	if (!pharmacyRepo) return;
 	auto id = currentPharmacyId();
 	if (!id) return;
-	auto *repository = getRepository();
-	auto *p = repository->findPharmacy(id);
+	auto *p = pharmacyRepo->findPharmacy(id);
 	if (!p) return;
 	pharmacyDlg->setValue(*p);
 	if (pharmacyDlg->exec() == QDialog::Accepted) {
 		*p = pharmacyDlg->value(); p->id = id;
-		repository->updatePharmacy(*p);
-		repository->save();
+		pharmacyRepo->updatePharmacy(*p);
+		pharmacyRepo->save();
 		refresh();
 	}
 }
 
 void PharmacySearchPage::deletePharmacy()
 {
+	if (!pharmacyRepo) return;
 	auto id = currentPharmacyId();
 	if (!id) return;
 	if (QMessageBox::question(this, tr("Удалить"), tr("Удалить выбранную аптеку?")) == QMessageBox::Yes) {
-		auto *repository = getRepository();
-		repository->removePharmacy(id);
-		repository->save();
+		pharmacyRepo->removePharmacy(id);
+		pharmacyRepo->save();
 		refresh();
 	}
 }
 
 void PharmacySearchPage::editPrice()
 {
+	if (!pharmacyRepo) return;
 	auto id = currentPharmacyId();
 	if (!id) return;
 	stockDlg->setInitial(drugId, id, 0.0, drugId == 0);
 	if (stockDlg->exec() == QDialog::Accepted) {
 		auto v = stockDlg->value();
-		auto *repository = getRepository();
-		repository->setStock(v.pharmacyId, v.drugId, v.price);
-		repository->save();
+		pharmacyRepo->setStock(v.pharmacyId, v.drugId, v.price);
+		pharmacyRepo->save();
 		refresh();
 	}
 }

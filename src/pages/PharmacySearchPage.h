@@ -4,6 +4,8 @@
 #include <QTimer>
 #include "../dialogs/StockDialog.h"
 #include "../dialogs/PharmacyDialog.h"
+#include "../models/DrugRepository.h"
+#include "../models/PharmacyRepository.h"
 
 class PharmacySearchPage : public BaseSearchPage {
 	Q_OBJECT
@@ -35,6 +37,8 @@ private:
 	quint32 currentPharmacyId() const;
 	void onHeaderClicked(int section);
 
+	Models::DrugRepository *drugRepo = nullptr;
+	Models::PharmacyRepository *pharmacyRepo = nullptr;
 	quint32 drugId = 0;
 	int sortSection = -1;
 	Qt::SortOrder sortOrder = Qt::AscendingOrder;

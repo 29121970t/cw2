@@ -4,10 +4,12 @@
 #include <QHeaderView>
 #include <QMessageBox>
 #include "../dialogs/DrugDialog.h"
+#include "../core/ServiceLocator.h"
 #include "../utils/QtHelpers.h"
 
 DrugSearchPage::DrugSearchPage(QWidget *parent)
 	: BaseSearchPage(parent),
+	  drugRepo(Core::ServiceLocator::get<Models::DrugRepository>()),
 	  dlg(Utils::QtHelpers::makeOwned<DrugDialog>(this))
 {
 	setupUi();
@@ -63,17 +65,19 @@ void DrugSearchPage::fillModel(const QVector<Models::Drug> &rows)
 
 void DrugSearchPage::refresh()
 {
-	fillModel(getRepository()->allDrugs());
+	if (!drugRepo) return;
+	fillModel(drugRepo->allDrugs());
 }
 
 void DrugSearchPage::filterChanged(const QString &text)
 {
+	if (!drugRepo) return;
 	if (text.trimmed().isEmpty()) {
 		refresh();
 		return;
 	}
 	QVector<Models::Drug> filtered;
-	for (const auto &d : getRepository()->allDrugs()) {
+	for (const auto &d : drugRepo->allDrugs()) {
 		if (d.tradeName.contains(text, Qt::CaseInsensitive) ||
 		    d.medicalName.contains(text, Qt::CaseInsensitive)) {
 			filtered.push_back(d);
@@ -92,40 +96,40 @@ quint32 DrugSearchPage::currentDrugId() const
 
 void DrugSearchPage::addDrug()
 {
+	if (!drugRepo) return;
 	dlg->reset();
 	if (dlg->exec() == QDialog::Accepted) {
 		Models::Drug d = dlg->value();
-		auto *repo = getRepository();
-		repo->addDrug(d);
-		repo->save();
+		drugRepo->addDrug(d);
+		drugRepo->save();
 		refresh();
 	}
 }
 
 void DrugSearchPage::editDrug()
 {
+	if (!drugRepo) return;
 	auto id = currentDrugId();
 	if (!id) return;
-	auto *repo = getRepository();
-	auto *d = repo->findDrug(id);
+	auto *d = drugRepo->findDrug(id);
 	if (!d) return;
 	dlg->setValue(*d);
 	if (dlg->exec() == QDialog::Accepted) {
 		*d = dlg->value(); d->id = id;
-		repo->updateDrug(*d);
-		repo->save();
+		drugRepo->updateDrug(*d);
+		drugRepo->save();
 		refresh();
 	}
 }
 
 void DrugSearchPage::deleteDrug()
 {
+	if (!drugRepo) return;
 	auto id = currentDrugId();
 	if (!id) return;
 	if (QMessageBox::question(this, tr("Удалить"), tr("Удалить выбранный препарат?")) == QMessageBox::Yes) {
-		auto *repo = getRepository();
-		repo->removeDrug(id);
-		repo->save();
+		drugRepo->removeDrug(id);
+		drugRepo->save();
 		refresh();
 	}
 }

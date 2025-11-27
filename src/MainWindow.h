@@ -4,7 +4,6 @@
 #include <QStackedWidget>
 #include <QToolBar>
 #include <QAction>
-#include "models/Repository.h"
 #include "core/ServiceLocator.h"
 
 class DrugSearchPage;

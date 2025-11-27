@@ -2,11 +2,14 @@
 #include <QUrl>
 #include <QWebEngineView>
 #include <QNetworkAccessManager>
+#include <QFile>
+#include <QDataStream>
+#include <QDir>
+#include <QStandardPaths>
 #include "MainWindow.h"
 #include "core/ServiceLocator.h"
-#include "models/Repository.h"
-
-using namespace Models;
+#include "models/DrugRepository.h"
+#include "models/PharmacyRepository.h"
 
 int main(int argc, char *argv[])
 {
@@ -85,9 +88,113 @@ int main(int argc, char *argv[])
 
 	// Register application services
 	{
-		auto repo = std::make_shared<Models::Repository>();
-		if (!repo->load()) { repo->seedSampleData(); repo->save(); }
-		Core::ServiceLocator::registerService<Models::Repository>(repo);
+		// Migration from old combined Repository file
+		auto migrateFromOldFile = []() -> bool {
+			const auto base = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+			const QString oldFile = base + QDir::separator() + "drug_system.bin";
+			QFile f(oldFile);
+			if (!f.exists() || !f.open(QIODevice::ReadOnly)) {
+				return false;
+			}
+			QDataStream in(&f);
+			in.setVersion(QDataStream::Qt_6_0);
+			quint32 version = 0;
+			in >> version;
+			if (version != 2 && version != 1) {
+				return false;
+			}
+			
+			// Read drugs
+			quint32 drugCount = 0;
+			in >> drugCount;
+			QVector<Models::Drug> drugs;
+			drugs.reserve(drugCount);
+			for (quint32 i = 0; i < drugCount; ++i) {
+				Models::Drug d;
+				if (version == 1) {
+					in >> d.id >> d.tradeName >> d.medicalName >> d.manufacturer
+					   >> d.dosageForm >> d.country >> d.prescriptionRequired;
+					double legacyMin = 0;
+					double legacyMax = 0;
+					in >> legacyMin >> legacyMax;
+				} else {
+					in >> d.id >> d.tradeName >> d.medicalName >> d.manufacturer
+					   >> d.dosageForm >> d.country >> d.prescriptionRequired;
+				}
+				drugs.push_back(d);
+			}
+			
+			// Read pharmacies
+			quint32 pharmacyCount = 0;
+			in >> pharmacyCount;
+			QVector<Models::Pharmacy> pharmacies;
+			pharmacies.reserve(pharmacyCount);
+			for (quint32 i = 0; i < pharmacyCount; ++i) {
+				Models::Pharmacy p;
+				in >> p;
+				pharmacies.push_back(p);
+			}
+			
+			// Read stocks
+			quint32 stockCount = 0;
+			in >> stockCount;
+			QVector<Models::Stock> stocks;
+			stocks.reserve(stockCount);
+			for (quint32 i = 0; i < stockCount; ++i) {
+				Models::Stock s;
+				in >> s;
+				stocks.push_back(s);
+			}
+			
+			// Write to new separate files
+			auto drugRepo = std::make_shared<Models::DrugRepository>();
+			for (const auto &d : drugs) {
+				drugRepo->addDrug(d);
+			}
+			drugRepo->save();
+			
+			auto pharmacyRepo = std::make_shared<Models::PharmacyRepository>();
+			for (const auto &p : pharmacies) {
+				pharmacyRepo->addPharmacy(p);
+			}
+			for (const auto &s : stocks) {
+				pharmacyRepo->setStock(s.pharmacyId, s.drugId, s.price);
+			}
+			pharmacyRepo->save();
+			
+			// Rename old file to mark as migrated
+			f.close();
+			QFile::rename(oldFile, oldFile + ".migrated");
+			return true;
+		};
+		
+		auto drugRepo = std::make_shared<Models::DrugRepository>();
+		auto pharmacyRepo = std::make_shared<Models::PharmacyRepository>();
+		
+		// Try to load from new files, if not found try migration, if still not found seed sample data
+		bool drugLoaded = drugRepo->load();
+		bool pharmacyLoaded = pharmacyRepo->load();
+		
+		if (!drugLoaded || !pharmacyLoaded) {
+			// Try migration from old file
+			if (migrateFromOldFile()) {
+				drugLoaded = drugRepo->load();
+				pharmacyLoaded = pharmacyRepo->load();
+			}
+		}
+		
+		if (!drugLoaded) {
+			drugRepo->seedSampleData();
+			drugRepo->save();
+		}
+		if (!pharmacyLoaded) {
+			pharmacyRepo->seedSampleData(drugRepo->allDrugs());
+			pharmacyRepo->save();
+		}
+		
+		Core::ServiceLocator::registerService<Models::DrugRepository>(drugRepo);
+		Core::ServiceLocator::registerService<Models::PharmacyRepository>(pharmacyRepo);
+		
 		auto net = std::make_shared<QNetworkAccessManager>();
 		Core::ServiceLocator::registerService<QNetworkAccessManager>(net);
 	}

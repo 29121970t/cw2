@@ -2,6 +2,7 @@
 
 #include "BaseSearchPage.h"
 #include "../dialogs/DrugDialog.h"
+#include "../models/DrugRepository.h"
 
 class DrugSearchPage : public BaseSearchPage {
 	Q_OBJECT
@@ -29,6 +30,7 @@ private:
 	void fillModel(const QVector<Models::Drug> &rows);
 	quint32 currentDrugId() const;
 
+	Models::DrugRepository *drugRepo = nullptr;
 	DrugDialog *dlg = nullptr;
 };
 

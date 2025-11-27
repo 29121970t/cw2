@@ -3,7 +3,6 @@
 #include "BaseDialog.h"
 #include <QLineEdit>
 #include "../models/Entities.h"
-#include "../models/Repository.h"
 #include "../widgets/ScheduleTable.h"
 #include "../widgets/MapWebView.h"
 #include <QNetworkAccessManager>

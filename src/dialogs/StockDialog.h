@@ -4,7 +4,6 @@
 #include <QComboBox>
 #include <QDoubleSpinBox>
 #include "../models/Entities.h"
-#include "../models/Repository.h"
 
 class StockDialog : public BaseDialog {
 	Q_OBJECT

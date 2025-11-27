@@ -1,5 +1,7 @@
 #include "StockDialog.h"
 #include "../core/ServiceLocator.h"
+#include "../models/DrugRepository.h"
+#include "../models/PharmacyRepository.h"
 #include "../utils/QtHelpers.h"
 #include <QMessageBox>
 
@@ -20,9 +22,10 @@ StockDialog::StockDialog(QWidget *parent)
 
 void StockDialog::setInitial(quint32 drugId, quint32 pharmacyId, double price, bool allowChangeDrug)
 {
-	// Populate options from shared Repository via Service Locator
-	const Models::Repository *r = Core::ServiceLocator::get<Models::Repository>();
-	if (!r) {
+	// Populate options from repositories via Service Locator
+	const auto *drugRepo = Core::ServiceLocator::get<Models::DrugRepository>();
+	const auto *pharmacyRepo = Core::ServiceLocator::get<Models::PharmacyRepository>();
+	if (!drugRepo || !pharmacyRepo) {
 		cbDrug->clear();
 		cbPharmacy->clear();
 		spPrice->setValue(price);
@@ -30,11 +33,11 @@ void StockDialog::setInitial(quint32 drugId, quint32 pharmacyId, double price, b
 	}
 
 	cbDrug->clear();
-	for (const auto &d : r->allDrugs()) {
+	for (const auto &d : drugRepo->allDrugs()) {
 		cbDrug->addItem(QString("%1 — %2").arg(d.tradeName, d.medicalName), d.id);
 	}
 	cbPharmacy->clear();
-	for (const auto &p : r->allPharmacies()) {
+	for (const auto &p : pharmacyRepo->allPharmacies()) {
 		cbPharmacy->addItem(p.name, p.id);
 	}
 	if (const int di = cbDrug->findData(drugId); di >= 0) {

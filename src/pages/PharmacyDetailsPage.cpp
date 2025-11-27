@@ -10,7 +10,8 @@
 
 PharmacyDetailsPage::PharmacyDetailsPage(QWidget *parent)
 	: BaseTablePage(parent),
-	  repo(Core::ServiceLocator::get<Models::Repository>()),
+	  drugRepo(Core::ServiceLocator::get<Models::DrugRepository>()),
+	  pharmacyRepo(Core::ServiceLocator::get<Models::PharmacyRepository>()),
 	  labelName(Utils::QtHelpers::makeOwned<QLabel>(this)),
 	  labelAddress(Utils::QtHelpers::makeOwned<QLabel>(this)),
 	  labelPhone(Utils::QtHelpers::makeOwned<QLabel>(this)),
@@ -82,7 +83,8 @@ void PharmacyDetailsPage::setPharmacy(quint32 newPharmacyId, quint32 contextDrug
 
 void PharmacyDetailsPage::refresh()
 {
-	const auto *p = repo->findPharmacyConst(pharmacyId);
+	if (!pharmacyRepo) return;
+	const auto *p = pharmacyRepo->findPharmacyConst(pharmacyId);
 	if (!p) return;
 	labelName->setText(p->name);
 	labelAddress->setText(tr("Адрес: %1").arg(p->address));
@@ -109,11 +111,12 @@ void PharmacyDetailsPage::refresh()
 
 void PharmacyDetailsPage::fillAssortment()
 {
+	if (!pharmacyRepo || !drugRepo) return;
 	auto *modelPtr = getModel();
 	modelPtr->clear();
 	modelPtr->setHorizontalHeaderLabels({tr("ID преп."), tr("Наименование"), tr("МНН"), tr("Цена"), QString()});
-	for (const auto &s : repo->stocksForPharmacy(pharmacyId)) {
-		const auto *d = repo->findDrugConst(s.drugId);
+	for (const auto &s : pharmacyRepo->stocksForPharmacy(pharmacyId)) {
+		const auto *d = drugRepo->findDrugConst(s.drugId);
 		if (!d) continue;
 		QList<QStandardItem*> row;
 		row << Utils::QtHelpers::makeOwned<QStandardItem>(QString::number(d->id));
@@ -128,13 +131,14 @@ void PharmacyDetailsPage::fillAssortment()
 
 void PharmacyDetailsPage::editPharmacy()
 {
-	auto *p = repo->findPharmacy(pharmacyId);
+	if (!pharmacyRepo) return;
+	auto *p = pharmacyRepo->findPharmacy(pharmacyId);
 	if (!p) return;
 	pharmacyDlg->setValue(*p);
 	if (pharmacyDlg->exec() == QDialog::Accepted) {
 		*p = pharmacyDlg->value(); p->id = pharmacyId;
-		repo->updatePharmacy(*p);
-		repo->save();
+		pharmacyRepo->updatePharmacy(*p);
+		pharmacyRepo->save();
 		refresh();
 	}
 }
@@ -153,17 +157,19 @@ quint32 PharmacyDetailsPage::currentSelectedDrugId() const
 
 void PharmacyDetailsPage::onRowAdd(int)
 {
+	if (!pharmacyRepo) return;
 	// reuse dialog, allow choosing any drug
 	stockDlg->setInitial(0, pharmacyId, 0.0, true);
 	if (stockDlg->exec() != QDialog::Accepted) return;
 	const auto v = stockDlg->value();
-	repo->setStock(v.pharmacyId, v.drugId, v.price);
-	repo->save();
+	pharmacyRepo->setStock(v.pharmacyId, v.drugId, v.price);
+	pharmacyRepo->save();
 	fillAssortment();
 }
 
 void PharmacyDetailsPage::onRowEdit(int row)
 {
+	if (!pharmacyRepo) return;
 	if (row < 0) return;
 	selectRow(row);
 	const quint32 drugId = currentSelectedDrugId();
@@ -173,19 +179,20 @@ void PharmacyDetailsPage::onRowEdit(int row)
 	stockDlg->setInitial(drugId, pharmacyId, price, false);
 	if (stockDlg->exec() != QDialog::Accepted) return;
 	const auto v = stockDlg->value();
-	repo->setStock(v.pharmacyId, v.drugId, v.price);
-	repo->save();
+	pharmacyRepo->setStock(v.pharmacyId, v.drugId, v.price);
+	pharmacyRepo->save();
 	fillAssortment();
 }
 
 void PharmacyDetailsPage::onRowDelete(int row)
 {
+	if (!pharmacyRepo) return;
 	if (row < 0) return;
 	selectRow(row);
 	const quint32 drugId = currentSelectedDrugId();
 	if (!drugId) return;
-	repo->removeStock(pharmacyId, drugId);
-	repo->save();
+	pharmacyRepo->removeStock(pharmacyId, drugId);
+	pharmacyRepo->save();
 	fillAssortment();
 }
 

@@ -4,7 +4,8 @@
 #include <QLabel>
 #include <QTableWidget>
 #include <QPushButton>
-#include "../models/Repository.h"
+#include "../models/DrugRepository.h"
+#include "../models/PharmacyRepository.h"
 #include "../widgets/MapWebView.h"
 #include "../dialogs/StockDialog.h"
 #include "../dialogs/PharmacyDialog.h"
@@ -30,7 +31,8 @@ private:
 	void fillAssortment();
 	quint32 currentSelectedDrugId() const;
 
-	Models::Repository *repo = nullptr;
+	Models::DrugRepository *drugRepo = nullptr;
+	Models::PharmacyRepository *pharmacyRepo = nullptr;
 	quint32 pharmacyId = 0;
 	quint32 forDrugId = 0;
 
