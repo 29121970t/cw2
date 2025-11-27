@@ -33,8 +33,8 @@ ScheduleTable::ScheduleTable(QWidget *parent)
 void ScheduleTable::setHours(const QVector<QPair<QTime,QTime>> &h)
 {
 	for (int i=0;i<7 && i<h.size();++i) {
-		auto *e1 = qobject_cast<QTimeEdit*>(cellWidget(i,1));
-		auto *e2 = qobject_cast<QTimeEdit*>(cellWidget(i,2));
+		auto * const e1 = qobject_cast<QTimeEdit*>(cellWidget(i,1));
+		auto * const e2 = qobject_cast<QTimeEdit*>(cellWidget(i,2));
 		if (e1 && e2) {
 			if (h[i].first.isValid()) e1->setTime(h[i].first);
 			if (h[i].second.isValid()) e2->setTime(h[i].second);
@@ -46,8 +46,8 @@ QVector<QPair<QTime,QTime>> ScheduleTable::hours() const
 {
 	QVector<QPair<QTime,QTime>> res(7);
 	for (int i=0;i<7;++i) {
-		auto *e1 = qobject_cast<QTimeEdit*>(cellWidget(i,1));
-		auto *e2 = qobject_cast<QTimeEdit*>(cellWidget(i,2));
+		const auto *e1 = qobject_cast<QTimeEdit*>(cellWidget(i,1));
+		const auto *e2 = qobject_cast<QTimeEdit*>(cellWidget(i,2));
 		res[i] = {e1 ? e1->time() : QTime(), e2 ? e2->time() : QTime()};
 	}
 	return res;
