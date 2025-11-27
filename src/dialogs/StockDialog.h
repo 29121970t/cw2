@@ -18,9 +18,9 @@ protected slots:
 	void onAccept() override;
 
 private:
-	QComboBox *cbDrug;
-	QComboBox *cbPharmacy;
-	QDoubleSpinBox *spPrice;
+	QComboBox *cbDrug = nullptr;
+	QComboBox *cbPharmacy = nullptr;
+	QDoubleSpinBox *spPrice = nullptr;
 };
 
 

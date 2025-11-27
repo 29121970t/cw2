@@ -6,6 +6,7 @@
 #include <QTimer>
 #include <QVariant>
 #include <QApplication>
+#include "../utils/QtHelpers.h"
 
 namespace Widgets {
 
@@ -22,9 +23,9 @@ signals:
 };
 
 MapWebView::MapWebView(QWidget *parent)
-	: QWidget(parent), web(new QWebEngineView(this))
+	: QWidget(parent), web(Utils::QtHelpers::makeOwned<QWebEngineView>(this))
 {
-	auto v = new QVBoxLayout;
+	auto v = Utils::QtHelpers::makeOwned<QVBoxLayout>();
 	v->setContentsMargins(0,0,0,0);
 	v->addWidget(web, 1);
 	setLayout(v);
@@ -102,8 +103,8 @@ void MapWebView::loadErrorPage(const QString &message)
 		"</body></html>"
 	).arg(message.toHtmlEscaped(), inputsHtml);
 	if (pickMode && !channel) {
-		channel = new QWebChannel(this);
-		auto *bridge = new MapBridge(this);
+		channel = Utils::QtHelpers::makeOwned<QWebChannel>(this);
+		auto *bridge = Utils::QtHelpers::makeOwned<MapBridge>(this);
 		connect(bridge, &MapBridge::picked, this, [this](double la, double lo){
 			lat = la; lon = lo; emit coordinatePicked(la, lo);
 		});
@@ -119,8 +120,8 @@ void MapWebView::loadInteractive()
 	if (apiKey.isEmpty()) { loadErrorPage(QString::fromUtf8("Ключ Google Maps не указан. Установите GOOGLE_MAPS_API_KEY.")); return; }
 	// Setup webchannel bridge for click picking if requested
 	if (!channel) {
-		channel = new QWebChannel(this);
-		auto *bridge = new MapBridge(this);
+		channel = Utils::QtHelpers::makeOwned<QWebChannel>(this);
+		auto *bridge = Utils::QtHelpers::makeOwned<MapBridge>(this);
 		connect(bridge, &MapBridge::picked, this, [this](double la, double lo){
 			lat = la; lon = lo; emit coordinatePicked(la, lo);
 		});

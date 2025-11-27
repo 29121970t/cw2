@@ -28,14 +28,14 @@ private:
 	void connectSignals();
 	void ensureSeedData();
 
-	QStackedWidget *stack;
-	QToolBar *toolbar;
-	QAction *actionBack;
+	QStackedWidget *stack = nullptr;
+	QToolBar *toolbar = nullptr;
+	QAction *actionBack = nullptr;
 
 	// pages
-	DrugSearchPage *pageDrugs;
-	PharmacySearchPage *pagePharmaciesForDrug;
-	PharmacyDetailsPage *pagePharmacyDetails;
+	DrugSearchPage *pageDrugs = nullptr;
+	PharmacySearchPage *pagePharmaciesForDrug = nullptr;
+	PharmacyDetailsPage *pagePharmacyDetails = nullptr;
 };
 
 

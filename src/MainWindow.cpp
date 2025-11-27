@@ -6,12 +6,13 @@
 #include "pages/DrugSearchPage.h"
 #include "pages/PharmacySearchPage.h"
 #include "pages/PharmacyDetailsPage.h"
+#include "utils/QtHelpers.h"
 
 MainWindow::MainWindow(QWidget *parent)
 	: QMainWindow(parent),
-	  stack(new QStackedWidget(this)),
+	  stack(Utils::QtHelpers::makeOwned<QStackedWidget>(this)),
 	  toolbar(addToolBar("MainToolbar")),
-	  actionBack(new QAction(tr("Назад"), this)),
+	  actionBack(Utils::QtHelpers::makeOwned<QAction>(tr("Назад"), this)),
 	  pageDrugs(nullptr),
 	  pagePharmaciesForDrug(nullptr),
 	  pagePharmacyDetails(nullptr)
@@ -48,7 +49,7 @@ void MainWindow::ensureSeedData()
 void MainWindow::openDrugSearch()
 {
 	if (!pageDrugs) {
-		pageDrugs = new DrugSearchPage(this);
+		pageDrugs = Utils::QtHelpers::makeOwned<DrugSearchPage>(this);
 		connect(pageDrugs, &DrugSearchPage::openPharmaciesForDrug,
 		        this, &MainWindow::openPharmacySearchForDrug);
 		connect(pageDrugs, &DrugSearchPage::switchToPharmacySearch,
@@ -62,7 +63,7 @@ void MainWindow::openDrugSearch()
 void MainWindow::openPharmacySearchForDrug(quint32 drugId)
 {
 	if (!pagePharmaciesForDrug) {
-		pagePharmaciesForDrug = new PharmacySearchPage(this);
+		pagePharmaciesForDrug = Utils::QtHelpers::makeOwned<PharmacySearchPage>(this);
 		connect(pagePharmaciesForDrug, &PharmacySearchPage::openPharmacyDetails,
 		        this, &MainWindow::openPharmacyDetails);
 		connect(pagePharmaciesForDrug, &PharmacySearchPage::switchToDrugSearch,
@@ -79,7 +80,7 @@ void MainWindow::openPharmacyDetails(quint32 pharmacyId, quint32 forDrugId)
 	const bool wasFull = isFullScreen();
 	const bool wasMax = isMaximized();
 	if (!pagePharmacyDetails) {
-		pagePharmacyDetails = new PharmacyDetailsPage(this);
+		pagePharmacyDetails = Utils::QtHelpers::makeOwned<PharmacyDetailsPage>(this);
 		stack->addWidget(pagePharmacyDetails);
 	}
 	pagePharmacyDetails->setPharmacy(pharmacyId, forDrugId);
@@ -96,7 +97,7 @@ void MainWindow::openPharmacyDetails(quint32 pharmacyId, quint32 forDrugId)
 void MainWindow::openPharmacySearchWithFilter(const QString &query)
 {
 	if (!pagePharmaciesForDrug) {
-		pagePharmaciesForDrug = new PharmacySearchPage(this);
+		pagePharmaciesForDrug = Utils::QtHelpers::makeOwned<PharmacySearchPage>(this);
 		connect(pagePharmaciesForDrug, &PharmacySearchPage::openPharmacyDetails,
 		        this, &MainWindow::openPharmacyDetails);
 		connect(pagePharmaciesForDrug, &PharmacySearchPage::switchToDrugSearch,
@@ -112,7 +113,7 @@ void MainWindow::openPharmacySearchWithFilter(const QString &query)
 void MainWindow::openDrugSearchWithFilter(const QString &query)
 {
 	if (!pageDrugs) {
-		pageDrugs = new DrugSearchPage(this);
+		pageDrugs = Utils::QtHelpers::makeOwned<DrugSearchPage>(this);
 		connect(pageDrugs, &DrugSearchPage::openPharmaciesForDrug,
 		        this, &MainWindow::openPharmacySearchForDrug);
 		connect(pageDrugs, &DrugSearchPage::switchToPharmacySearch,

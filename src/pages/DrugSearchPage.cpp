@@ -4,10 +4,11 @@
 #include <QHeaderView>
 #include <QMessageBox>
 #include "../dialogs/DrugDialog.h"
+#include "../utils/QtHelpers.h"
 
 DrugSearchPage::DrugSearchPage(QWidget *parent)
 	: BaseSearchPage(parent),
-	  dlg(new DrugDialog(this))
+	  dlg(Utils::QtHelpers::makeOwned<DrugDialog>(this))
 {
 	setupUi();
 	refresh();
@@ -23,8 +24,8 @@ void DrugSearchPage::setupUi()
 	table->setSortingEnabled(true);
 	setupActionsDelegate();
 
-	auto v = new QVBoxLayout;
-	auto top = new QHBoxLayout;
+	auto v = Utils::QtHelpers::makeOwned<QVBoxLayout>();
+	auto top = Utils::QtHelpers::makeOwned<QHBoxLayout>();
 	top->addWidget(modeCombo);
 	top->addWidget(searchEdit, 1);
 	v->addLayout(top);
@@ -42,14 +43,14 @@ void DrugSearchPage::fillModel(const QVector<Models::Drug> &rows)
 	                                  tr("Страна"), tr("Рецепт"), QString()});
 	for (const auto &d : rows) {
 		QList<QStandardItem*> items;
-		items << new QStandardItem(QString::number(d.id));
-		items << new QStandardItem(d.tradeName);
-		items << new QStandardItem(d.medicalName);
-		items << new QStandardItem(d.manufacturer);
-		items << new QStandardItem(d.dosageForm);
-		items << new QStandardItem(d.country);
-		items << new QStandardItem(d.prescriptionRequired ? tr("Да") : tr("Нет"));
-		items << new QStandardItem(QString());
+		items << Utils::QtHelpers::makeOwned<QStandardItem>(QString::number(d.id));
+		items << Utils::QtHelpers::makeOwned<QStandardItem>(d.tradeName);
+		items << Utils::QtHelpers::makeOwned<QStandardItem>(d.medicalName);
+		items << Utils::QtHelpers::makeOwned<QStandardItem>(d.manufacturer);
+		items << Utils::QtHelpers::makeOwned<QStandardItem>(d.dosageForm);
+		items << Utils::QtHelpers::makeOwned<QStandardItem>(d.country);
+		items << Utils::QtHelpers::makeOwned<QStandardItem>(d.prescriptionRequired ? tr("Да") : tr("Нет"));
+		items << Utils::QtHelpers::makeOwned<QStandardItem>(QString());
 		model->appendRow(items);
 	}
 	applyActionsDelegateToLastColumn();

@@ -1,6 +1,7 @@
 #include "ScheduleTable.h"
 #include <QHeaderView>
 #include <QTimeEdit>
+#include "../utils/QtHelpers.h"
 
 namespace Widgets {
 
@@ -21,11 +22,11 @@ ScheduleTable::ScheduleTable(QWidget *parent)
 	setColumnWidth(2, 95);
 	for (int r=0; r<rowCount(); ++r) setRowHeight(r, 26);
 	for (int i=0;i<7;++i) {
-		auto dayItem = new QTableWidgetItem(dayName(i));
+		auto dayItem = Utils::QtHelpers::makeOwned<QTableWidgetItem>(dayName(i));
 		dayItem->setFlags(Qt::ItemIsEnabled);
 		setItem(i, 0, dayItem);
-		setCellWidget(i, 1, new QTimeEdit(QTime(8,0)));
-		setCellWidget(i, 2, new QTimeEdit(QTime(22,0)));
+		setCellWidget(i, 1, Utils::QtHelpers::makeOwned<QTimeEdit>(QTime(8,0)));
+		setCellWidget(i, 2, Utils::QtHelpers::makeOwned<QTimeEdit>(QTime(22,0)));
 	}
 }
 

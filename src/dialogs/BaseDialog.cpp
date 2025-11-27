@@ -1,11 +1,18 @@
 #include "BaseDialog.h"
+#include <memory>
 
 BaseDialog::BaseDialog(const QString &title, QWidget *parent)
-	: QDialog(parent),
-	  formLayout(new QFormLayout),
-	  mainLayout(new QVBoxLayout(this)),
-	  buttonBox(new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, this))
+	: QDialog(parent)
 {
+	auto layout = std::make_unique<QFormLayout>();
+	formLayout = layout.release();
+
+	auto main = std::make_unique<QVBoxLayout>(this);
+	mainLayout = main.release();
+
+	auto buttons = std::make_unique<QDialogButtonBox>(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, this);
+	buttonBox = buttons.release();
+
 	setWindowTitle(title);
 	setupButtons();
 }

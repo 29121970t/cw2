@@ -30,7 +30,7 @@ private:
 	void fillModel(const QVector<Models::Drug> &rows);
 	quint32 currentDrugId() const;
 
-	DrugDialog *dlg;
+	DrugDialog *dlg = nullptr;
 };
 
 

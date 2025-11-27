@@ -1,10 +1,12 @@
 #include "BaseSearchPage.h"
+#include "../core/ServiceLocator.h"
+#include "../utils/QtHelpers.h"
 
 BaseSearchPage::BaseSearchPage(QWidget *parent)
 	: BaseTablePage(parent),
 	  repo(Core::ServiceLocator::get<Models::Repository>()),
-	  modeCombo(new QComboBox(this)),
-	  searchEdit(new QLineEdit(this))
+	  modeCombo(Utils::QtHelpers::makeOwned<QComboBox>(this)),
+	  searchEdit(Utils::QtHelpers::makeOwned<QLineEdit>(this))
 {
 }
 

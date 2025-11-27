@@ -24,8 +24,8 @@ protected slots:
 	virtual void onAccept() = 0;
 
 protected:
-	QFormLayout *formLayout;
-	QVBoxLayout *mainLayout;
-	QDialogButtonBox *buttonBox;
+	QFormLayout *formLayout = nullptr;
+	QVBoxLayout *mainLayout = nullptr;
+	QDialogButtonBox *buttonBox = nullptr;
 };
 

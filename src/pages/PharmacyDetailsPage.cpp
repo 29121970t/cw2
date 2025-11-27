@@ -5,19 +5,20 @@
 #include "../dialogs/PharmacyDialog.h"
 #include "../dialogs/StockDialog.h"
 #include "../core/ServiceLocator.h"
+#include "../utils/QtHelpers.h"
 #include <QMouseEvent>
 
 PharmacyDetailsPage::PharmacyDetailsPage(QWidget *parent)
 	: BaseTablePage(parent),
 	  repo(Core::ServiceLocator::get<Models::Repository>()),
-	  labelName(new QLabel(this)),
-	  labelAddress(new QLabel(this)),
-	  labelPhone(new QLabel(this)),
-	  scheduleView(new QTableWidget(7, 2, this)),
-	  map(new Widgets::MapWebView(this)),
-	  btnEditPharmacy(new QPushButton(tr("Редактировать аптеку"), this)),
-	  stockDlg(new StockDialog(this)),
-	  pharmacyDlg(new PharmacyDialog(this))
+	  labelName(Utils::QtHelpers::makeOwned<QLabel>(this)),
+	  labelAddress(Utils::QtHelpers::makeOwned<QLabel>(this)),
+	  labelPhone(Utils::QtHelpers::makeOwned<QLabel>(this)),
+	  scheduleView(Utils::QtHelpers::makeOwned<QTableWidget>(7, 2, this)),
+	  map(Utils::QtHelpers::makeOwned<Widgets::MapWebView>(this)),
+	  btnEditPharmacy(Utils::QtHelpers::makeOwned<QPushButton>(tr("Редактировать аптеку"), this)),
+	  stockDlg(Utils::QtHelpers::makeOwned<StockDialog>(this)),
+	  pharmacyDlg(Utils::QtHelpers::makeOwned<PharmacyDialog>(this))
 {
 	setupUi();
 }
@@ -39,30 +40,30 @@ void PharmacyDetailsPage::setupUi()
 	scheduleView->horizontalHeader()->setStretchLastSection(true);
 	static const QStringList days = {"Понедельник","Вторник","Среда","Четверг","Пятница","Суббота","Воскресенье"};
 	for (int i=0;i<7;++i) {
-		scheduleView->setItem(i, 0, new QTableWidgetItem(days.value(i)));
+		scheduleView->setItem(i, 0, Utils::QtHelpers::makeOwned<QTableWidgetItem>(days.value(i)));
 		scheduleView->item(i,0)->setFlags(Qt::ItemIsEnabled);
-		scheduleView->setItem(i, 1, new QTableWidgetItem(""));
+		scheduleView->setItem(i, 1, Utils::QtHelpers::makeOwned<QTableWidgetItem>(""));
 		scheduleView->item(i,1)->setFlags(Qt::ItemIsEnabled);
 	}
 
-	auto top = new QVBoxLayout;
+	auto top = Utils::QtHelpers::makeOwned<QVBoxLayout>();
 	top->addWidget(labelName);
 	top->addWidget(labelAddress);
 	top->addWidget(labelPhone);
 
-	auto left = new QVBoxLayout;
+	auto left = Utils::QtHelpers::makeOwned<QVBoxLayout>();
 	left->addLayout(top);
 	left->addWidget(scheduleView, 1);
 	left->addWidget(btnEditPharmacy);
 
-	auto right = new QVBoxLayout;
+	auto right = Utils::QtHelpers::makeOwned<QVBoxLayout>();
 	right->addWidget(map, 1);
 
-	auto grid = new QHBoxLayout;
+	auto grid = Utils::QtHelpers::makeOwned<QHBoxLayout>();
 	grid->addLayout(left, 1);
 	grid->addLayout(right, 1);
 
-	auto v = new QVBoxLayout;
+	auto v = Utils::QtHelpers::makeOwned<QVBoxLayout>();
 	v->addLayout(grid, 1);
 	v->addWidget(table, 1);
 	setLayout(v);
@@ -96,7 +97,7 @@ void PharmacyDetailsPage::refresh()
 		}
 		auto *it = scheduleView->item(i,1);
 		if (!it) {
-			it = new QTableWidgetItem;
+			it = Utils::QtHelpers::makeOwned<QTableWidgetItem>();
 			scheduleView->setItem(i,1,it);
 		}
 		it->setText(text);
@@ -113,11 +114,11 @@ void PharmacyDetailsPage::fillAssortment()
 		const auto *d = repo->findDrugConst(s.drugId);
 		if (!d) continue;
 		QList<QStandardItem*> row;
-		row << new QStandardItem(QString::number(d->id));
-		row << new QStandardItem(d->tradeName);
-		row << new QStandardItem(d->medicalName);
-		row << new QStandardItem(QString::number(s.price, 'f', 2));
-		row << new QStandardItem(QString());
+		row << Utils::QtHelpers::makeOwned<QStandardItem>(QString::number(d->id));
+		row << Utils::QtHelpers::makeOwned<QStandardItem>(d->tradeName);
+		row << Utils::QtHelpers::makeOwned<QStandardItem>(d->medicalName);
+		row << Utils::QtHelpers::makeOwned<QStandardItem>(QString::number(s.price, 'f', 2));
+		row << Utils::QtHelpers::makeOwned<QStandardItem>(QString());
 		model->appendRow(row);
 	}
 	applyActionsDelegateToLastColumn();

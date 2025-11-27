@@ -13,16 +13,17 @@
 #include <QJsonArray>
 #include <QProcessEnvironment>
 #include "../core/ServiceLocator.h"
+#include "../utils/QtHelpers.h"
 
 PharmacyDialog::PharmacyDialog(QWidget *parent)
 	: BaseDialog(tr("Аптека"), parent),
-	  eName(new QLineEdit(this)),
-	  eAddress(new QLineEdit(this)),
-	  ePhone(new QLineEdit(this)),
-	  schedule(new Widgets::ScheduleTable(this)),
-	  mapPicker(new Widgets::MapWebView(this)),
+	  eName(Utils::QtHelpers::makeOwned<QLineEdit>(this)),
+	  eAddress(Utils::QtHelpers::makeOwned<QLineEdit>(this)),
+	  ePhone(Utils::QtHelpers::makeOwned<QLineEdit>(this)),
+	  schedule(Utils::QtHelpers::makeOwned<Widgets::ScheduleTable>(this)),
+	  mapPicker(Utils::QtHelpers::makeOwned<Widgets::MapWebView>(this)),
 	  net(Core::ServiceLocator::get<QNetworkAccessManager>()),
-	  addressDebounce(new QTimer(this))
+	  addressDebounce(Utils::QtHelpers::makeOwned<QTimer>(this))
 {
 	setMinimumSize(900, 820);
 	eName->setMaxLength(128);
@@ -31,7 +32,7 @@ PharmacyDialog::PharmacyDialog(QWidget *parent)
 	eName->setPlaceholderText(tr("Название аптеки"));
 	eAddress->setPlaceholderText(tr("Город, улица, дом"));
 	ePhone->setPlaceholderText(tr("+375 (xx) xxx-xx-xx"));
-	ePhone->setValidator(new QRegularExpressionValidator(QRegularExpression("^[+0-9 ()-]{6,20}$"), ePhone));
+	ePhone->setValidator(Utils::QtHelpers::makeOwned<QRegularExpressionValidator>(QRegularExpression("^[+0-9 ()-]{6,20}$"), ePhone));
 
 	getFormLayout()->addRow(tr("Название"), eName);
 	getFormLayout()->addRow(tr("Адрес"), eAddress);
@@ -39,7 +40,7 @@ PharmacyDialog::PharmacyDialog(QWidget *parent)
 	schedule->setMaximumWidth(320);
 	schedule->setMaximumHeight(220);
 	getFormLayout()->addRow(tr("Часы работы"), schedule);
-	auto mapLabel = new QLabel(tr("Расположение (Google Maps): кликните по карте, чтобы выбрать"), this);
+	auto mapLabel = Utils::QtHelpers::makeOwned<QLabel>(tr("Расположение (Google Maps): кликните по карте, чтобы выбрать"), this);
 	mapLabel->setWordWrap(true);
 	getFormLayout()->addRow(mapLabel);
 	mapPicker->setMinimumHeight(320);

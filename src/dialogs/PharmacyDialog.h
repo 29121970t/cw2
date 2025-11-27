@@ -28,15 +28,15 @@ private slots:
 	void geolocateByIpIfNeeded();
 
 private:
-	QLineEdit *eName;
-	QLineEdit *eAddress;
-	QLineEdit *ePhone;
-	Widgets::ScheduleTable *schedule;
-	Widgets::MapWebView *mapPicker;
+	QLineEdit *eName = nullptr;
+	QLineEdit *eAddress = nullptr;
+	QLineEdit *ePhone = nullptr;
+	Widgets::ScheduleTable *schedule = nullptr;
+	Widgets::MapWebView *mapPicker = nullptr;
 	double lat = 0.0;
 	double lon = 0.0;
-	QNetworkAccessManager *net;
-	QTimer *addressDebounce;
+	QNetworkAccessManager *net = nullptr;
+	QTimer *addressDebounce = nullptr;
 };
 
 

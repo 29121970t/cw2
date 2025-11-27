@@ -1,12 +1,13 @@
 #include "BaseTablePage.h"
 #include <QHeaderView>
 #include <QMouseEvent>
+#include "../utils/QtHelpers.h"
 
 BaseTablePage::BaseTablePage(QWidget *parent)
 	: QWidget(parent),
-	  table(new QTableView(this)),
-	  model(new QStandardItemModel(this)),
-	  actionsDelegate(new Widgets::ActionButtonsDelegate(this))
+	  table(Utils::QtHelpers::makeOwned<QTableView>(this)),
+	  model(Utils::QtHelpers::makeOwned<QStandardItemModel>(this)),
+	  actionsDelegate(Utils::QtHelpers::makeOwned<Widgets::ActionButtonsDelegate>(this))
 {
 }
 

@@ -34,8 +34,8 @@ protected slots:
 	virtual void onRowDelete(int row) = 0;
 
 protected:
-	QTableView *table;
-	QStandardItemModel *model;
-	Widgets::ActionButtonsDelegate *actionsDelegate;
+	QTableView *table = nullptr;
+	QStandardItemModel *model = nullptr;
+	Widgets::ActionButtonsDelegate *actionsDelegate = nullptr;
 };
 

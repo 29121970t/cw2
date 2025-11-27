@@ -27,8 +27,8 @@ protected slots:
 	virtual void modeChanged(int index) = 0;
 
 protected:
-	Models::Repository *repo;
-	QComboBox *modeCombo;
-	QLineEdit *searchEdit;
+	Models::Repository *repo = nullptr;
+	QComboBox *modeCombo = nullptr;
+	QLineEdit *searchEdit = nullptr;
 };
 

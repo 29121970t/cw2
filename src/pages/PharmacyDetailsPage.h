@@ -30,18 +30,18 @@ private:
 	void fillAssortment();
 	quint32 currentSelectedDrugId() const;
 
-	Models::Repository *repo;
+	Models::Repository *repo = nullptr;
 	quint32 pharmacyId = 0;
 	quint32 forDrugId = 0;
 
-	QLabel *labelName;
-	QLabel *labelAddress;
-	QLabel *labelPhone;
-	QTableWidget *scheduleView;
-	Widgets::MapWebView *map;
-	QPushButton *btnEditPharmacy;
-	StockDialog *stockDlg;
-	PharmacyDialog *pharmacyDlg;
+	QLabel *labelName = nullptr;
+	QLabel *labelAddress = nullptr;
+	QLabel *labelPhone = nullptr;
+	QTableWidget *scheduleView = nullptr;
+	Widgets::MapWebView *map = nullptr;
+	QPushButton *btnEditPharmacy = nullptr;
+	StockDialog *stockDlg = nullptr;
+	PharmacyDialog *pharmacyDlg = nullptr;
 };
 
 

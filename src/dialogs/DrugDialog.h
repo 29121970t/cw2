@@ -18,12 +18,12 @@ protected slots:
 	void onAccept() override;
 
 private:
-	QLineEdit *eTrade;
-	QLineEdit *eMedical;
-	QLineEdit *eManufacturer;
-	QLineEdit *eForm;
-	QLineEdit *eCountry;
-	QCheckBox *cbRx;
+	QLineEdit *eTrade = nullptr;
+	QLineEdit *eMedical = nullptr;
+	QLineEdit *eManufacturer = nullptr;
+	QLineEdit *eForm = nullptr;
+	QLineEdit *eCountry = nullptr;
+	QCheckBox *cbRx = nullptr;
 };
 
 

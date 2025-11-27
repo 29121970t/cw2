@@ -9,11 +9,12 @@
 #include "../dialogs/PharmacyDialog.h"
 #include "../dialogs/StockDialog.h"
 #include "../utils/PharmacyUtils.h"
+#include "../utils/QtHelpers.h"
 
 PharmacySearchPage::PharmacySearchPage(QWidget *parent)
 	: BaseSearchPage(parent),
-	  stockDlg(new StockDialog(this)),
-	  pharmacyDlg(new PharmacyDialog(this))
+	  stockDlg(Utils::QtHelpers::makeOwned<StockDialog>(this)),
+	  pharmacyDlg(Utils::QtHelpers::makeOwned<PharmacyDialog>(this))
 {
 	setupUi();
 }
@@ -29,13 +30,13 @@ void PharmacySearchPage::setupUi()
 	setupActionsDelegate();
 
 	// periodic update of "open/closed" state
-	openUpdateTimer = new QTimer(this);
+	openUpdateTimer = Utils::QtHelpers::makeOwned<QTimer>(this);
 	openUpdateTimer->setInterval(30000); // 30s
 	connect(openUpdateTimer, &QTimer::timeout, this, &PharmacySearchPage::refresh);
 	openUpdateTimer->start();
 
-	auto v = new QVBoxLayout;
-	auto top = new QHBoxLayout;
+	auto v = Utils::QtHelpers::makeOwned<QVBoxLayout>();
+	auto top = Utils::QtHelpers::makeOwned<QHBoxLayout>();
 	top->addWidget(modeCombo);
 	top->addWidget(searchEdit, 1);
 	v->addLayout(top);
@@ -129,13 +130,13 @@ void PharmacySearchPage::fillModel()
 	// Fill model
 	for (const auto &r : rowsOut) {
 		QList<QStandardItem*> items;
-		items << new QStandardItem(QString::number(r.id));
-		items << new QStandardItem(r.name);
-		items << new QStandardItem(r.address);
-		items << new QStandardItem(r.open ? tr("Открыто") : tr("Закрыто"));
-		items << new QStandardItem(r.phone);
-		items << new QStandardItem(std::isnan(r.price) ? QString() : QString::number(r.price, 'f', 2));
-		items << new QStandardItem(QString());
+		items << Utils::QtHelpers::makeOwned<QStandardItem>(QString::number(r.id));
+		items << Utils::QtHelpers::makeOwned<QStandardItem>(r.name);
+		items << Utils::QtHelpers::makeOwned<QStandardItem>(r.address);
+		items << Utils::QtHelpers::makeOwned<QStandardItem>(r.open ? tr("Открыто") : tr("Закрыто"));
+		items << Utils::QtHelpers::makeOwned<QStandardItem>(r.phone);
+		items << Utils::QtHelpers::makeOwned<QStandardItem>(std::isnan(r.price) ? QString() : QString::number(r.price, 'f', 2));
+		items << Utils::QtHelpers::makeOwned<QStandardItem>(QString());
 		model->appendRow(items);
 	}
 }
