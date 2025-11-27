@@ -21,12 +21,15 @@ PharmacySearchPage::PharmacySearchPage(QWidget *parent)
 
 void PharmacySearchPage::setupUi()
 {
-	modeCombo->addItems({tr("По аптеке"), tr("По препарату")});
-	searchEdit->setPlaceholderText(tr("Фильтр по названию или адресу..."));
+	auto *mode = getModeCombo();
+	mode->addItems({tr("По аптеке"), tr("По препарату")});
+	auto *search = getSearchEdit();
+	search->setPlaceholderText(tr("Фильтр по названию или адресу..."));
 
 	setupTable();
-	table->horizontalHeader()->setSectionsClickable(true);
-	table->horizontalHeader()->setSortIndicatorShown(true);
+	auto *tbl = getTable();
+	tbl->horizontalHeader()->setSectionsClickable(true);
+	tbl->horizontalHeader()->setSortIndicatorShown(true);
 	setupActionsDelegate();
 
 	// periodic update of "open/closed" state
@@ -37,15 +40,15 @@ void PharmacySearchPage::setupUi()
 
 	auto v = Utils::QtHelpers::makeOwned<QVBoxLayout>();
 	auto top = Utils::QtHelpers::makeOwned<QHBoxLayout>();
-	top->addWidget(modeCombo);
-	top->addWidget(searchEdit, 1);
+	top->addWidget(mode);
+	top->addWidget(search, 1);
 	v->addLayout(top);
-	v->addWidget(table, 1);
+	v->addWidget(tbl, 1);
 	setLayout(v);
 
 	setupSearch();
-	connect(table, &QTableView::doubleClicked, this, &PharmacySearchPage::openDetails);
-	connect(table->horizontalHeader(), &QHeaderView::sectionClicked, this, &PharmacySearchPage::onHeaderClicked);
+	connect(tbl, &QTableView::doubleClicked, this, &PharmacySearchPage::openDetails);
+	connect(tbl->horizontalHeader(), &QHeaderView::sectionClicked, this, &PharmacySearchPage::onHeaderClicked);
 }
 
 void PharmacySearchPage::setDrug(quint32 drugId)
@@ -61,16 +64,17 @@ void PharmacySearchPage::setInitialFilter(const QString &text)
 
 void PharmacySearchPage::refresh()
 {
-	model->clear();
+	auto *mdl = getModel();
+	mdl->clear();
 	if (drugId == 0) {
-		model->setHorizontalHeaderLabels({tr("ID"), tr("Аптека"), tr("Адрес"), tr("Открыто сейчас"), tr("Телефон"), QString()});
+		mdl->setHorizontalHeaderLabels({tr("ID"), tr("Аптека"), tr("Адрес"), tr("Открыто сейчас"), tr("Телефон"), QString()});
 	} else {
-		model->setHorizontalHeaderLabels({tr("ID"), tr("Аптека"), tr("Адрес"), tr("Открыто сейчас"), tr("Телефон"), tr("Цена"), QString()});
+		mdl->setHorizontalHeaderLabels({tr("ID"), tr("Аптека"), tr("Адрес"), tr("Открыто сейчас"), tr("Телефон"), tr("Цена"), QString()});
 	}
 	fillModel();
 	applyActionsDelegateToLastColumn();
 	if (sortSection >= 0) {
-		table->horizontalHeader()->setSortIndicator(sortSection, sortOrder);
+		getTable()->horizontalHeader()->setSortIndicator(sortSection, sortOrder);
 	}
 }
 
@@ -81,9 +85,11 @@ void PharmacySearchPage::fillModel()
 {
 	struct Row { quint32 id; QString name; QString address; bool open; QString phone; double price; };
 	QVector<Row> rowsOut;
-	const QString filter = searchEdit->text().trimmed();
+	const QString filter = getSearchEdit()->text().trimmed();
+	auto *repository = getRepository();
+	auto *mdl = getModel();
 	if (drugId == 0) {
-		for (const auto &p : repo->allPharmacies()) {
+		for (const auto &p : repository->allPharmacies()) {
 			if (!filter.isEmpty()) {
 				if (!p.name.contains(filter, Qt::CaseInsensitive) &&
 				    !p.address.contains(filter, Qt::CaseInsensitive)) continue;
@@ -91,8 +97,8 @@ void PharmacySearchPage::fillModel()
 			rowsOut.push_back({p.id, p.name, p.address, isOpenNow(p), p.phone, qQNaN()});
 		}
 	} else {
-		for (const auto &s : repo->stocksForDrug(drugId)) {
-			const auto *p = repo->findPharmacyConst(s.pharmacyId);
+		for (const auto &s : repository->stocksForDrug(drugId)) {
+			const auto *p = repository->findPharmacyConst(s.pharmacyId);
 			if (!p) continue;
 			if (!filter.isEmpty()) {
 				if (!p->name.contains(filter, Qt::CaseInsensitive) &&
@@ -137,20 +143,21 @@ void PharmacySearchPage::fillModel()
 		items << Utils::QtHelpers::makeOwned<QStandardItem>(r.phone);
 		items << Utils::QtHelpers::makeOwned<QStandardItem>(std::isnan(r.price) ? QString() : QString::number(r.price, 'f', 2));
 		items << Utils::QtHelpers::makeOwned<QStandardItem>(QString());
-		model->appendRow(items);
+		mdl->appendRow(items);
 	}
 }
 
 void PharmacySearchPage::onHeaderClicked(int section)
 {
-	if (section == model->columnCount()-1) return; // ignore action column
+	const auto *mdl = getModel();
+	if (section == mdl->columnCount()-1) return; // ignore action column
 	if (sortSection == section) {
 		sortOrder = (sortOrder == Qt::AscendingOrder) ? Qt::DescendingOrder : Qt::AscendingOrder;
 	} else {
 		sortSection = section;
 		sortOrder = Qt::AscendingOrder;
 	}
-	table->horizontalHeader()->setSortIndicator(sortSection, sortOrder);
+	getTable()->horizontalHeader()->setSortIndicator(sortSection, sortOrder);
 	refresh();
 }
 
@@ -161,9 +168,9 @@ void PharmacySearchPage::filterChanged(const QString &)
 
 quint32 PharmacySearchPage::currentPharmacyId() const
 {
-	const auto sel = table->selectionModel()->selectedRows();
+	const auto sel = getTable()->selectionModel()->selectedRows();
 	if (sel.isEmpty()) return 0;
-	return model->item(sel.first().row(), 0)->text().toUInt();
+	return getModel()->item(sel.first().row(), 0)->text().toUInt();
 }
 
 void PharmacySearchPage::addPharmacy()
@@ -171,8 +178,9 @@ void PharmacySearchPage::addPharmacy()
 	pharmacyDlg->reset();
 	if (pharmacyDlg->exec() == QDialog::Accepted) {
 		Models::Pharmacy p = pharmacyDlg->value();
-		repo->addPharmacy(p);
-		repo->save();
+		auto *repository = getRepository();
+		repository->addPharmacy(p);
+		repository->save();
 		refresh();
 	}
 }
@@ -181,13 +189,14 @@ void PharmacySearchPage::editPharmacy()
 {
 	auto id = currentPharmacyId();
 	if (!id) return;
-	auto *p = repo->findPharmacy(id);
+	auto *repository = getRepository();
+	auto *p = repository->findPharmacy(id);
 	if (!p) return;
 	pharmacyDlg->setValue(*p);
 	if (pharmacyDlg->exec() == QDialog::Accepted) {
 		*p = pharmacyDlg->value(); p->id = id;
-		repo->updatePharmacy(*p);
-		repo->save();
+		repository->updatePharmacy(*p);
+		repository->save();
 		refresh();
 	}
 }
@@ -197,8 +206,9 @@ void PharmacySearchPage::deletePharmacy()
 	auto id = currentPharmacyId();
 	if (!id) return;
 	if (QMessageBox::question(this, tr("Удалить"), tr("Удалить выбранную аптеку?")) == QMessageBox::Yes) {
-		repo->removePharmacy(id);
-		repo->save();
+		auto *repository = getRepository();
+		repository->removePharmacy(id);
+		repository->save();
 		refresh();
 	}
 }
@@ -210,8 +220,9 @@ void PharmacySearchPage::editPrice()
 	stockDlg->setInitial(drugId, id, 0.0, drugId == 0);
 	if (stockDlg->exec() == QDialog::Accepted) {
 		auto v = stockDlg->value();
-		repo->setStock(v.pharmacyId, v.drugId, v.price);
-		repo->save();
+		auto *repository = getRepository();
+		repository->setStock(v.pharmacyId, v.drugId, v.price);
+		repository->save();
 		refresh();
 	}
 }
@@ -226,8 +237,8 @@ void PharmacySearchPage::openDetails()
 void PharmacySearchPage::modeChanged(int index)
 {
 	if (index == 1) {
-		emit switchToDrugSearch(searchEdit->text());
-		modeCombo->setCurrentIndex(0);
+		emit switchToDrugSearch(getSearchEdit()->text());
+		getModeCombo()->setCurrentIndex(0);
 	}
 }
 

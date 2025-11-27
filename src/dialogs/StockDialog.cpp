@@ -21,7 +21,7 @@ StockDialog::StockDialog(QWidget *parent)
 void StockDialog::setInitial(quint32 drugId, quint32 pharmacyId, double price, bool allowChangeDrug)
 {
 	// Populate options from shared Repository via Service Locator
-	Models::Repository *r = Core::ServiceLocator::get<Models::Repository>();
+	const Models::Repository *r = Core::ServiceLocator::get<Models::Repository>();
 	if (!r) {
 		cbDrug->clear();
 		cbPharmacy->clear();
@@ -37,10 +37,12 @@ void StockDialog::setInitial(quint32 drugId, quint32 pharmacyId, double price, b
 	for (const auto &p : r->allPharmacies()) {
 		cbPharmacy->addItem(p.name, p.id);
 	}
-	int di = cbDrug->findData(drugId);
-	if (di >= 0) cbDrug->setCurrentIndex(di);
-	int pi = cbPharmacy->findData(pharmacyId);
-	if (pi >= 0) cbPharmacy->setCurrentIndex(pi);
+	if (const int di = cbDrug->findData(drugId); di >= 0) {
+		cbDrug->setCurrentIndex(di);
+	}
+	if (const int pi = cbPharmacy->findData(pharmacyId); pi >= 0) {
+		cbPharmacy->setCurrentIndex(pi);
+	}
 	cbDrug->setEnabled(allowChangeDrug);
 	cbPharmacy->setEnabled(false); // this dialog is usually context of pharmacy
 	spPrice->setValue(price);

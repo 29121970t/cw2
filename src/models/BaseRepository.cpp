@@ -19,7 +19,7 @@ QString BaseRepository::dataFilePath() const
 	return base + QDir::separator() + fileName;
 }
 
-bool BaseRepository::readFromFile(const std::function<bool(QDataStream&)> &reader)
+bool BaseRepository::readFromFile(const std::function<bool(QDataStream&)> &reader) const
 {
 	QFile f(dataFilePath());
 	if (!f.exists() || !f.open(QIODevice::ReadOnly)) {

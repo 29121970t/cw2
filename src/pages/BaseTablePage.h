@@ -33,7 +33,7 @@ protected slots:
 	virtual void onRowEdit(int row) = 0;
 	virtual void onRowDelete(int row) = 0;
 
-protected:
+private:
 	QTableView *table = nullptr;
 	QStandardItemModel *model = nullptr;
 	Widgets::ActionButtonsDelegate *actionsDelegate = nullptr;

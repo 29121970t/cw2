@@ -54,7 +54,7 @@ bool BaseTablePage::eventFilter(QObject *obj, QEvent *event)
 {
 	if (obj == table->viewport()) {
 		if (event->type() == QEvent::MouseMove) {
-			auto *me = static_cast<QMouseEvent*>(event);
+			const auto *me = static_cast<QMouseEvent*>(event);
 			const QModelIndex idx = table->indexAt(me->pos());
 			actionsDelegate->setHoveredRow(idx.isValid() ? idx.row() : -1);
 			table->viewport()->update();

@@ -17,37 +17,36 @@ int main(int argc, char *argv[])
 	// Apply modern dark theme with green accents
 	QApplication::setStyle("Fusion");
 	{
-		const QColor bg        = QColor(30, 32, 34);     // window background
-		const QColor panel     = QColor(40, 42, 46);     // panels/cards
-		const QColor base      = QColor(36, 38, 41);     // inputs
-		const QColor text      = QColor(235, 235, 235);  // primary text
-		const QColor midText   = QColor(200, 200, 200);  // secondary
-		const QColor disabled  = QColor(130, 130, 130);
-		const QColor accent    = QColor(34, 197, 94);    // green accent (#22c55e)
-		const QColor accentD   = QColor(22, 160, 78);
+		const auto bg        = QColor(30, 32, 34);     // window background
+		const auto panel     = QColor(40, 42, 46);     // panels/cards
+		const auto base      = QColor(36, 38, 41);     // inputs
+		const auto text      = QColor(235, 235, 235);  // primary text
+		const auto disabled  = QColor(130, 130, 130);
+		const auto accent    = QColor(34, 197, 94);    // green accent (#22c55e)
+		const auto accentD   = QColor(22, 160, 78);
 
-		QPalette p;
-		p.setColor(QPalette::Window, bg);
-		p.setColor(QPalette::WindowText, text);
-		p.setColor(QPalette::Base, base);
-		p.setColor(QPalette::AlternateBase, panel);
-		p.setColor(QPalette::ToolTipBase, panel);
-		p.setColor(QPalette::ToolTipText, text);
-		p.setColor(QPalette::Text, text);
-		p.setColor(QPalette::Button, panel);
-		p.setColor(QPalette::ButtonText, text);
-		p.setColor(QPalette::Highlight, accent);
-		p.setColor(QPalette::HighlightedText, QColor(0,0,0));
-		p.setColor(QPalette::BrightText, text);
-		p.setColor(QPalette::PlaceholderText, disabled);
-		p.setColor(QPalette::Link, accent);
-		p.setColor(QPalette::Disabled, QPalette::ButtonText, disabled);
-		p.setColor(QPalette::Disabled, QPalette::Text, disabled);
-		p.setColor(QPalette::Disabled, QPalette::WindowText, disabled);
-		app.setPalette(p);
+		auto palette = QPalette{};
+		palette.setColor(QPalette::Window, bg);
+		palette.setColor(QPalette::WindowText, text);
+		palette.setColor(QPalette::Base, base);
+		palette.setColor(QPalette::AlternateBase, panel);
+		palette.setColor(QPalette::ToolTipBase, panel);
+		palette.setColor(QPalette::ToolTipText, text);
+		palette.setColor(QPalette::Text, text);
+		palette.setColor(QPalette::Button, panel);
+		palette.setColor(QPalette::ButtonText, text);
+		palette.setColor(QPalette::Highlight, accent);
+		palette.setColor(QPalette::HighlightedText, QColor(0,0,0));
+		palette.setColor(QPalette::BrightText, text);
+		palette.setColor(QPalette::PlaceholderText, disabled);
+		palette.setColor(QPalette::Link, accent);
+		palette.setColor(QPalette::Disabled, QPalette::ButtonText, disabled);
+		palette.setColor(QPalette::Disabled, QPalette::Text, disabled);
+		palette.setColor(QPalette::Disabled, QPalette::WindowText, disabled);
+		QApplication::setPalette(palette);
 
 		// Subtle styling for widgets to match palette
-		const QString css = QString(
+		const auto css = QString(
 			"QWidget { background-color:%1; color:%2; }"
 			"QLabel { background: transparent; }"
 			"QGroupBox, QToolBar { background-color:%3; }"
@@ -76,12 +75,12 @@ int main(int argc, char *argv[])
 
 	// Pre-initialize Qt WebEngine at app start to avoid first-use glitches (e.g., leaving fullscreen)
 	{
-		QWebEngineView prewarm;
+		auto prewarm = QWebEngineView{};
 		prewarm.setAttribute(Qt::WA_DontShowOnScreen, true);
 		prewarm.resize(1, 1);
 		prewarm.load(QUrl("about:blank"));
 		// Let the event loop process initialization tasks once
-		app.processEvents();
+		QApplication::processEvents();
 	}
 
 	// Register application services
@@ -93,11 +92,11 @@ int main(int argc, char *argv[])
 		Core::ServiceLocator::registerService<QNetworkAccessManager>(net);
 	}
 
-	MainWindow w;
-	w.resize(1200, 720);
-	w.show();
+	auto window = MainWindow{};
+	window.resize(1200, 720);
+	window.show();
 	
-	int result = app.exec();
+	const auto result = QApplication::exec();
 	
 	// Clean up WebEngine resources before application exit to avoid OpenGL warnings
 	QApplication::processEvents();

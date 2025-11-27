@@ -12,10 +12,7 @@ MainWindow::MainWindow(QWidget *parent)
 	: QMainWindow(parent),
 	  stack(Utils::QtHelpers::makeOwned<QStackedWidget>(this)),
 	  toolbar(addToolBar("MainToolbar")),
-	  actionBack(Utils::QtHelpers::makeOwned<QAction>(tr("Назад"), this)),
-	  pageDrugs(nullptr),
-	  pagePharmaciesForDrug(nullptr),
-	  pagePharmacyDetails(nullptr)
+	  actionBack(Utils::QtHelpers::makeOwned<QAction>(tr("Назад"), this))
 {
 	buildUi();
 	connectSignals();

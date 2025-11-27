@@ -26,8 +26,9 @@ PharmacyDetailsPage::PharmacyDetailsPage(QWidget *parent)
 void PharmacyDetailsPage::setupUi()
 {
 	setupTable();
-	table->horizontalHeader()->setSectionsClickable(true);
-	table->horizontalHeader()->setSortIndicatorShown(true);
+	auto *tableView = getTable();
+	tableView->horizontalHeader()->setSectionsClickable(true);
+	tableView->horizontalHeader()->setSortIndicatorShown(true);
 	setupActionsDelegate();
 
 	labelName->setStyleSheet("font-weight: bold; font-size: 18px;");
@@ -65,11 +66,11 @@ void PharmacyDetailsPage::setupUi()
 
 	auto v = Utils::QtHelpers::makeOwned<QVBoxLayout>();
 	v->addLayout(grid, 1);
-	v->addWidget(table, 1);
+	v->addWidget(tableView, 1);
 	setLayout(v);
 
 	connect(btnEditPharmacy, &QPushButton::clicked, this, &PharmacyDetailsPage::editPharmacy);
-	connect(table, &QTableView::doubleClicked, this, &PharmacyDetailsPage::editAssortmentRow);
+	connect(tableView, &QTableView::doubleClicked, this, &PharmacyDetailsPage::editAssortmentRow);
 }
 
 void PharmacyDetailsPage::setPharmacy(quint32 pharmacyId, quint32 forDrugId)
@@ -108,8 +109,9 @@ void PharmacyDetailsPage::refresh()
 
 void PharmacyDetailsPage::fillAssortment()
 {
-	model->clear();
-	model->setHorizontalHeaderLabels({tr("ID преп."), tr("Наименование"), tr("МНН"), tr("Цена"), QString()});
+	auto *modelPtr = getModel();
+	modelPtr->clear();
+	modelPtr->setHorizontalHeaderLabels({tr("ID преп."), tr("Наименование"), tr("МНН"), tr("Цена"), QString()});
 	for (const auto &s : repo->stocksForPharmacy(pharmacyId)) {
 		const auto *d = repo->findDrugConst(s.drugId);
 		if (!d) continue;
@@ -119,7 +121,7 @@ void PharmacyDetailsPage::fillAssortment()
 		row << Utils::QtHelpers::makeOwned<QStandardItem>(d->medicalName);
 		row << Utils::QtHelpers::makeOwned<QStandardItem>(QString::number(s.price, 'f', 2));
 		row << Utils::QtHelpers::makeOwned<QStandardItem>(QString());
-		model->appendRow(row);
+		modelPtr->appendRow(row);
 	}
 	applyActionsDelegateToLastColumn();
 }
@@ -139,14 +141,14 @@ void PharmacyDetailsPage::editPharmacy()
 
 void PharmacyDetailsPage::editAssortmentRow()
 {
-	onRowEdit(table->currentIndex().row());
+	onRowEdit(getTable()->currentIndex().row());
 }
 
 quint32 PharmacyDetailsPage::currentSelectedDrugId() const
 {
-	const auto sel = table->selectionModel()->selectedRows();
+	const auto sel = getTable()->selectionModel()->selectedRows();
 	if (sel.isEmpty()) return 0;
-	return model->item(sel.first().row(), 0)->text().toUInt();
+	return getModel()->item(sel.first().row(), 0)->text().toUInt();
 }
 
 void PharmacyDetailsPage::onRowAdd(int)
@@ -166,7 +168,7 @@ void PharmacyDetailsPage::onRowEdit(int row)
 	selectRow(row);
 	const quint32 drugId = currentSelectedDrugId();
 	if (!drugId) return;
-	const QString priceStr = model->item(row, 3)->text();
+	const QString priceStr = getModel()->item(row, 3)->text();
 	double price = priceStr.toDouble();
 	stockDlg->setInitial(drugId, pharmacyId, price, false);
 	if (stockDlg->exec() != QDialog::Accepted) return;

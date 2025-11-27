@@ -26,7 +26,7 @@ protected slots:
 	virtual void filterChanged(const QString &text) = 0;
 	virtual void modeChanged(int index) = 0;
 
-protected:
+private:
 	Models::Repository *repo = nullptr;
 	QComboBox *modeCombo = nullptr;
 	QLineEdit *searchEdit = nullptr;

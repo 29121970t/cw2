@@ -16,30 +16,35 @@ DrugSearchPage::DrugSearchPage(QWidget *parent)
 
 void DrugSearchPage::setupUi()
 {
-	modeCombo->addItems({tr("По препарату"), tr("По аптеке")});
-	searchEdit->setPlaceholderText(tr("Поиск по названию препарата (торговому или МНН)..."));
+	auto *modeComboCtrl = getModeCombo();
+	auto *searchCtrl = getSearchEdit();
+	auto *tableView = getTable();
+
+	modeComboCtrl->addItems({tr("По препарату"), tr("По аптеке")});
+	searchCtrl->setPlaceholderText(tr("Поиск по названию препарата (торговому или МНН)..."));
 
 	setupTable();
-	table->horizontalHeader()->setSortIndicatorShown(true);
-	table->setSortingEnabled(true);
+	tableView->horizontalHeader()->setSortIndicatorShown(true);
+	tableView->setSortingEnabled(true);
 	setupActionsDelegate();
 
 	auto v = Utils::QtHelpers::makeOwned<QVBoxLayout>();
 	auto top = Utils::QtHelpers::makeOwned<QHBoxLayout>();
-	top->addWidget(modeCombo);
-	top->addWidget(searchEdit, 1);
+	top->addWidget(modeComboCtrl);
+	top->addWidget(searchCtrl, 1);
 	v->addLayout(top);
-	v->addWidget(table, 1);
+	v->addWidget(tableView, 1);
 	setLayout(v);
 
 	setupSearch();
-	connect(table, &QTableView::doubleClicked, this, &DrugSearchPage::openPharmacies);
+	connect(tableView, &QTableView::doubleClicked, this, &DrugSearchPage::openPharmacies);
 }
 
 void DrugSearchPage::fillModel(const QVector<Models::Drug> &rows)
 {
-	model->clear();
-	model->setHorizontalHeaderLabels({tr("ID"), tr("Наименование (торговое)"), tr("МНН"), tr("Производитель"), tr("Форма"),
+	auto *modelPtr = getModel();
+	modelPtr->clear();
+	modelPtr->setHorizontalHeaderLabels({tr("ID"), tr("Наименование (торговое)"), tr("МНН"), tr("Производитель"), tr("Форма"),
 	                                  tr("Страна"), tr("Рецепт"), QString()});
 	for (const auto &d : rows) {
 		QList<QStandardItem*> items;
@@ -51,14 +56,14 @@ void DrugSearchPage::fillModel(const QVector<Models::Drug> &rows)
 		items << Utils::QtHelpers::makeOwned<QStandardItem>(d.country);
 		items << Utils::QtHelpers::makeOwned<QStandardItem>(d.prescriptionRequired ? tr("Да") : tr("Нет"));
 		items << Utils::QtHelpers::makeOwned<QStandardItem>(QString());
-		model->appendRow(items);
+		modelPtr->appendRow(items);
 	}
 	applyActionsDelegateToLastColumn();
 }
 
 void DrugSearchPage::refresh()
 {
-	fillModel(repo->allDrugs());
+	fillModel(getRepository()->allDrugs());
 }
 
 void DrugSearchPage::filterChanged(const QString &text)
@@ -68,7 +73,7 @@ void DrugSearchPage::filterChanged(const QString &text)
 		return;
 	}
 	QVector<Models::Drug> filtered;
-	for (const auto &d : repo->allDrugs()) {
+	for (const auto &d : getRepository()->allDrugs()) {
 		if (d.tradeName.contains(text, Qt::CaseInsensitive) ||
 		    d.medicalName.contains(text, Qt::CaseInsensitive)) {
 			filtered.push_back(d);
@@ -79,9 +84,10 @@ void DrugSearchPage::filterChanged(const QString &text)
 
 quint32 DrugSearchPage::currentDrugId() const
 {
-	const auto sel = table->selectionModel()->selectedRows();
+	const auto *tableView = getTable();
+	const auto sel = tableView->selectionModel()->selectedRows();
 	if (sel.isEmpty()) return 0;
-	return model->item(sel.first().row(), 0)->text().toUInt();
+	return getModel()->item(sel.first().row(), 0)->text().toUInt();
 }
 
 void DrugSearchPage::addDrug()
@@ -89,6 +95,7 @@ void DrugSearchPage::addDrug()
 	dlg->reset();
 	if (dlg->exec() == QDialog::Accepted) {
 		Models::Drug d = dlg->value();
+		auto *repo = getRepository();
 		repo->addDrug(d);
 		repo->save();
 		refresh();
@@ -99,6 +106,7 @@ void DrugSearchPage::editDrug()
 {
 	auto id = currentDrugId();
 	if (!id) return;
+	auto *repo = getRepository();
 	auto *d = repo->findDrug(id);
 	if (!d) return;
 	dlg->setValue(*d);
@@ -115,6 +123,7 @@ void DrugSearchPage::deleteDrug()
 	auto id = currentDrugId();
 	if (!id) return;
 	if (QMessageBox::question(this, tr("Удалить"), tr("Удалить выбранный препарат?")) == QMessageBox::Yes) {
+		auto *repo = getRepository();
 		repo->removeDrug(id);
 		repo->save();
 		refresh();
@@ -123,8 +132,10 @@ void DrugSearchPage::deleteDrug()
 
 void DrugSearchPage::openPharmacies()
 {
-	if (modeCombo->currentIndex() == 1) {
-		emit switchToPharmacySearch(searchEdit->text());
+	auto *modeComboCtrl = getModeCombo();
+	auto *searchCtrl = getSearchEdit();
+	if (modeComboCtrl->currentIndex() == 1) {
+		emit switchToPharmacySearch(searchCtrl->text());
 	} else {
 		auto id = currentDrugId();
 		if (!id) return;
@@ -150,9 +161,9 @@ void DrugSearchPage::onRowDelete(int row)
 void DrugSearchPage::modeChanged(int index)
 {
 	if (index == 1) {
-		emit switchToPharmacySearch(searchEdit->text());
+		emit switchToPharmacySearch(getSearchEdit()->text());
 		// вернуть режим по умолчанию визуально
-		modeCombo->setCurrentIndex(0);
+		getModeCombo()->setCurrentIndex(0);
 	}
 }
 
