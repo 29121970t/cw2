@@ -16,9 +16,9 @@ DrugSearchPage::DrugSearchPage(QWidget *parent)
 
 void DrugSearchPage::setupUi()
 {
-	auto *modeComboCtrl = getModeCombo();
-	auto *searchCtrl = getSearchEdit();
-	auto *tableView = getTable();
+	auto * const modeComboCtrl = getModeCombo();
+	auto * const searchCtrl = getSearchEdit();
+	auto * const tableView = getTable();
 
 	modeComboCtrl->addItems({tr("По препарату"), tr("По аптеке")});
 	searchCtrl->setPlaceholderText(tr("Поиск по названию препарата (торговому или МНН)..."));
@@ -132,8 +132,8 @@ void DrugSearchPage::deleteDrug()
 
 void DrugSearchPage::openPharmacies()
 {
-	auto *modeComboCtrl = getModeCombo();
-	auto *searchCtrl = getSearchEdit();
+	auto * const modeComboCtrl = getModeCombo();
+	auto * const searchCtrl = getSearchEdit();
 	if (modeComboCtrl->currentIndex() == 1) {
 		emit switchToPharmacySearch(searchCtrl->text());
 	} else {
@@ -166,10 +166,4 @@ void DrugSearchPage::modeChanged(int index)
 		getModeCombo()->setCurrentIndex(0);
 	}
 }
-
-void DrugSearchPage::setInitialFilter(const QString &text)
-{
-	BaseSearchPage::setInitialFilter(text);
-}
-
 

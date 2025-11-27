@@ -11,7 +11,7 @@ class BaseSearchPage : public BaseTablePage {
 public:
 	explicit BaseSearchPage(QWidget *parent = nullptr);
 
-	virtual void setInitialFilter(const QString &text);
+	virtual void setInitialFilter(const QString &text) const;
 
 protected:
 	// Common search setup

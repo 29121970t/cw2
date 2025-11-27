@@ -4,6 +4,8 @@
 #include "Entities.h"
 #include <QVector>
 
+class QDataStream;
+
 namespace Models {
 
 class PharmacyRepository : public BaseRepository {
@@ -31,6 +33,8 @@ public:
 
 private:
 	quint32 nextPharmacyId() const;
+	bool deserialize(QDataStream &in);
+	bool serialize(QDataStream &out) const;
 
 	QVector<Pharmacy> pharmacies;
 	QVector<Stock> stocks;

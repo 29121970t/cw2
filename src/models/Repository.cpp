@@ -5,6 +5,7 @@
 #include <QFile>
 #include <QDataStream>
 #include <QtAlgorithms>
+#include <ranges>
 
 static const quint32 DATA_VERSION = 2;
 
@@ -35,9 +36,10 @@ bool Repository::load()
 	drugs.clear();
 	pharmacies.clear();
 	stocks.clear();
-	quint32 nd=0,np=0,ns=0;
-	in >> nd;
-	for (quint32 i=0;i<nd;++i) {
+
+	quint32 drugCount = 0;
+	in >> drugCount;
+	for (quint32 i = 0; i < drugCount; ++i) {
 		Models::Drug d;
 		if (version == 1) {
 			// read legacy layout with min/max prices and drop them
@@ -51,18 +53,20 @@ bool Repository::load()
 		}
 		drugs.push_back(d);
 	}
-	in >> np;
-	for (quint32 i=0;i<np;++i) {
+	quint32 pharmacyCount = 0;
+	in >> pharmacyCount;
+	for (quint32 i = 0; i < pharmacyCount; ++i) {
 		Models::Pharmacy p; in >> p; pharmacies.push_back(p);
 	}
-	in >> ns;
-	for (quint32 i=0;i<ns;++i) {
+	quint32 stockCount = 0;
+	in >> stockCount;
+	for (quint32 i = 0; i < stockCount; ++i) {
 		Models::Stock s; in >> s; stocks.push_back(s);
 	}
 	return true;
 }
 
-bool Repository::save()
+bool Repository::save() const
 {
 	QFile f(dataFilePath());
 	if (!f.open(QIODevice::WriteOnly)) {
@@ -80,14 +84,14 @@ bool Repository::save()
 	return true;
 }
 
-quint32 Repository::nextDrugId()
+quint32 Repository::nextDrugId() const
 {
 	quint32 maxId = 0;
 	for (const auto &d : drugs) maxId = std::max(maxId, d.id);
 	return maxId + 1;
 }
 
-quint32 Repository::nextPharmacyId()
+quint32 Repository::nextPharmacyId() const
 {
 	quint32 maxId = 0;
 	for (const auto &p : pharmacies) maxId = std::max(maxId, p.id);
@@ -113,9 +117,10 @@ bool Repository::updateDrug(const Drug &d)
 bool Repository::removeDrug(quint32 id)
 {
 	const int before = drugs.size();
-	drugs.erase(std::remove_if(drugs.begin(), drugs.end(), [id](const Drug& d){ return d.id==id; }), drugs.end());
-	// remove related stocks
-	stocks.erase(std::remove_if(stocks.begin(), stocks.end(), [id](const Stock& s){ return s.drugId==id; }), stocks.end());
+	const auto [first, last] = std::ranges::remove_if(drugs, [id](const Drug& d){ return d.id == id; });
+	drugs.erase(first, last);
+	const auto stockRange = std::ranges::remove_if(stocks, [id](const Stock& s){ return s.drugId == id; });
+	stocks.erase(stockRange.begin(), stockRange.end());
 	return before != drugs.size();
 }
 
@@ -151,8 +156,10 @@ bool Repository::updatePharmacy(const Pharmacy &p)
 bool Repository::removePharmacy(quint32 id)
 {
 	const int before = pharmacies.size();
-	pharmacies.erase(std::remove_if(pharmacies.begin(), pharmacies.end(), [id](const Pharmacy& p){ return p.id==id; }), pharmacies.end());
-	stocks.erase(std::remove_if(stocks.begin(), stocks.end(), [id](const Stock& s){ return s.pharmacyId==id; }), stocks.end());
+	const auto [first, last] = std::ranges::remove_if(pharmacies, [id](const Pharmacy& p){ return p.id == id; });
+	pharmacies.erase(first, last);
+	const auto stockRange = std::ranges::remove_if(stocks, [id](const Stock& s){ return s.pharmacyId == id; });
+	stocks.erase(stockRange.begin(), stockRange.end());
 	return before != pharmacies.size();
 }
 
@@ -181,9 +188,10 @@ bool Repository::setStock(quint32 pharmacyId, quint32 drugId, double price)
 bool Repository::removeStock(quint32 pharmacyId, quint32 drugId)
 {
 	const int before = stocks.size();
-	stocks.erase(std::remove_if(stocks.begin(), stocks.end(), [pharmacyId,drugId](const Stock& s){
-		return s.pharmacyId==pharmacyId && s.drugId==drugId;
-	}), stocks.end());
+	const auto range = std::ranges::remove_if(stocks, [pharmacyId,drugId](const Stock& s){
+		return s.pharmacyId == pharmacyId && s.drugId == drugId;
+	});
+	stocks.erase(range.begin(), range.end());
 	return before != stocks.size();
 }
 

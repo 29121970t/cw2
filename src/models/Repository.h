@@ -10,7 +10,7 @@ public:
 	Repository();
 
 	bool load();
-	bool save();
+	bool save() const;
 	void seedSampleData();
 
 	// Accessors
@@ -42,8 +42,8 @@ public:
 	QString dataFilePath() const;
 
 private:
-	quint32 nextDrugId();
-	quint32 nextPharmacyId();
+	quint32 nextDrugId() const;
+	quint32 nextPharmacyId() const;
 
 	QVector<Drug> drugs;
 	QVector<Pharmacy> pharmacies;

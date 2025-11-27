@@ -11,7 +11,6 @@ public:
 	explicit PharmacySearchPage(QWidget *parent = nullptr);
 
 	void setDrug(quint32 drugId);
-	void setInitialFilter(const QString &text) override;
 
 signals:
 	void openPharmacyDetails(quint32 pharmacyId, quint32 forDrugId);

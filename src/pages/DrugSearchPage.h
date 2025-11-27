@@ -7,7 +7,6 @@ class DrugSearchPage : public BaseSearchPage {
 	Q_OBJECT
 public:
 	explicit DrugSearchPage(QWidget *parent = nullptr);
-	void setInitialFilter(const QString &text) override;
 
 signals:
 	void openPharmaciesForDrug(quint32 drugId);

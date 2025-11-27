@@ -73,10 +73,10 @@ void PharmacyDetailsPage::setupUi()
 	connect(tableView, &QTableView::doubleClicked, this, &PharmacyDetailsPage::editAssortmentRow);
 }
 
-void PharmacyDetailsPage::setPharmacy(quint32 pharmacyId, quint32 forDrugId)
+void PharmacyDetailsPage::setPharmacy(quint32 newPharmacyId, quint32 contextDrugId)
 {
-	this->pharmacyId = pharmacyId;
-	this->forDrugId = forDrugId;
+	this->pharmacyId = newPharmacyId;
+	this->forDrugId = contextDrugId;
 	refresh();
 }
 
@@ -89,10 +89,10 @@ void PharmacyDetailsPage::refresh()
 	labelPhone->setText(tr("Телефон: %1").arg(p->phone));
 	// fill scheduleView with "HH:mm-HH:mm"
 	for (int i=0;i<scheduleView->rowCount() && i<p->hours.size(); ++i) {
-		const auto &h = p->hours[i];
+		const auto &[openTime, closeTime] = p->hours[i];
 		QString text;
-		if (h.first.isValid() && h.second.isValid()) {
-			text = h.first.toString("HH:mm") + "-" + h.second.toString("HH:mm");
+		if (openTime.isValid() && closeTime.isValid()) {
+			text = openTime.toString("HH:mm") + "-" + closeTime.toString("HH:mm");
 		} else {
 			text = QString();
 		}

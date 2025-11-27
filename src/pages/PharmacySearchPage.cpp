@@ -6,10 +6,13 @@
 #include <QMessageBox>
 #include <QDate>
 #include <QMouseEvent>
+#include <QObject>
+#include <algorithm>
 #include "../dialogs/PharmacyDialog.h"
 #include "../dialogs/StockDialog.h"
 #include "../utils/PharmacyUtils.h"
 #include "../utils/QtHelpers.h"
+#include <cmath>
 
 PharmacySearchPage::PharmacySearchPage(QWidget *parent)
 	: BaseSearchPage(parent),
@@ -21,13 +24,13 @@ PharmacySearchPage::PharmacySearchPage(QWidget *parent)
 
 void PharmacySearchPage::setupUi()
 {
-	auto *mode = getModeCombo();
+	auto * const mode = getModeCombo();
 	mode->addItems({tr("По аптеке"), tr("По препарату")});
-	auto *search = getSearchEdit();
+	auto * const search = getSearchEdit();
 	search->setPlaceholderText(tr("Фильтр по названию или адресу..."));
 
 	setupTable();
-	auto *tbl = getTable();
+	auto * const tbl = getTable();
 	tbl->horizontalHeader()->setSectionsClickable(true);
 	tbl->horizontalHeader()->setSortIndicatorShown(true);
 	setupActionsDelegate();
@@ -57,20 +60,8 @@ void PharmacySearchPage::setDrug(quint32 drugId)
 	refresh();
 }
 
-void PharmacySearchPage::setInitialFilter(const QString &text)
-{
-	BaseSearchPage::setInitialFilter(text);
-}
-
 void PharmacySearchPage::refresh()
 {
-	auto *mdl = getModel();
-	mdl->clear();
-	if (drugId == 0) {
-		mdl->setHorizontalHeaderLabels({tr("ID"), tr("Аптека"), tr("Адрес"), tr("Открыто сейчас"), tr("Телефон"), QString()});
-	} else {
-		mdl->setHorizontalHeaderLabels({tr("ID"), tr("Аптека"), tr("Адрес"), tr("Открыто сейчас"), tr("Телефон"), tr("Цена"), QString()});
-	}
 	fillModel();
 	applyActionsDelegateToLastColumn();
 	if (sortSection >= 0) {
@@ -78,73 +69,155 @@ void PharmacySearchPage::refresh()
 	}
 }
 
-// Use shared utility for determining whether the pharmacy is open
-static inline bool isOpenNow(const Models::Pharmacy &p) { return Utils::isPharmacyOpenNow(p); }
+namespace {
+struct RowData {
+	quint32 id = 0;
+	QString name;
+	QString address;
+	bool openNow = false;
+	QString phone;
+	double price = qQNaN();
+};
+
+bool matchesFilter(const Models::Pharmacy &pharmacy, const QString &filter)
+{
+	if (filter.isEmpty()) return true;
+	return pharmacy.name.contains(filter, Qt::CaseInsensitive)
+	    || pharmacy.address.contains(filter, Qt::CaseInsensitive);
+}
+
+RowData makeRow(const Models::Pharmacy &pharmacy, double price = qQNaN())
+{
+	return {
+		pharmacy.id,
+		pharmacy.name,
+		pharmacy.address,
+		Utils::isPharmacyOpenNow(pharmacy),
+		pharmacy.phone,
+		price
+	};
+}
+
+int compareStrings(const QString &lhs, const QString &rhs, Qt::SortOrder order)
+{
+	const int cmp = lhs.localeAwareCompare(rhs);
+	if (cmp == 0) return 0;
+	return order == Qt::AscendingOrder ? (cmp < 0 ? -1 : 1) : (cmp > 0 ? -1 : 1);
+}
+
+bool compareRows(const RowData &a, const RowData &b, int section, Qt::SortOrder order, int priceColumn)
+{
+	if (section == priceColumn && priceColumn >= 0) {
+		const bool aNaN = std::isnan(a.price);
+		const bool bNaN = std::isnan(b.price);
+		if (aNaN != bNaN) return bNaN; // NaN always last
+		if (!aNaN && !bNaN && !qFuzzyCompare(a.price + 1, b.price + 1)) {
+			return order == Qt::AscendingOrder ? (a.price < b.price) : (a.price > b.price);
+		}
+		section = 1; // fallback to name
+	}
+
+	if (section < 0) {
+		if (a.openNow != b.openNow) {
+			return a.openNow && !b.openNow;
+		}
+		return compareRows(a, b, 1, Qt::AscendingOrder, priceColumn);
+	}
+
+	switch (section) {
+		case 1: {
+			const int cmp = compareStrings(a.name, b.name, order);
+			return cmp == 0 ? a.id < b.id : (cmp < 0);
+		}
+		case 2: {
+			const int cmp = compareStrings(a.address, b.address, order);
+			return cmp == 0 ? a.name.localeAwareCompare(b.name) < 0 : (cmp < 0);
+		}
+		case 3: {
+			if (a.openNow != b.openNow) {
+				return order == Qt::AscendingOrder ? (a.openNow && !b.openNow)
+				                                   : (!a.openNow && b.openNow);
+			}
+			return compareRows(a, b, 1, order, priceColumn);
+		}
+		case 4: {
+			const int cmp = compareStrings(a.phone, b.phone, order);
+			return cmp == 0 ? a.name.localeAwareCompare(b.name) < 0 : (cmp < 0);
+		}
+		default:
+			return compareRows(a, b, 1, order, priceColumn);
+	}
+}
+
+QVector<RowData> collectRows(const Models::Repository *repository, quint32 drugId, const QString &filter)
+{
+	QVector<RowData> rows;
+	if (!repository) return rows;
+
+	if (drugId == 0) {
+		const auto &pharmacies = repository->allPharmacies();
+		rows.reserve(pharmacies.size());
+		for (const auto &pharmacy : pharmacies) {
+			if (!matchesFilter(pharmacy, filter)) continue;
+			rows.push_back(makeRow(pharmacy));
+		}
+	} else {
+		for (const auto &stock : repository->stocksForDrug(drugId)) {
+			const auto *pharmacy = repository->findPharmacyConst(stock.pharmacyId);
+			if (!pharmacy || !matchesFilter(*pharmacy, filter)) continue;
+			rows.push_back(makeRow(*pharmacy, stock.price));
+		}
+	}
+	return rows;
+}
+
+void sortRows(QVector<RowData> &rows, int sortSection, Qt::SortOrder order, int priceColumn)
+{
+	const auto comparator = [sortSection, order, priceColumn](const RowData &lhs, const RowData &rhs) {
+		return compareRows(lhs, rhs, sortSection, order, priceColumn);
+	};
+	std::stable_sort(rows.begin(), rows.end(), comparator);
+}
+
+void writeRows(QStandardItemModel *model, const QVector<RowData> &rows, bool includePrice)
+{
+	if (!model) return;
+	model->clear();
+	if (includePrice) {
+		model->setHorizontalHeaderLabels({QObject::tr("ID"), QObject::tr("Аптека"), QObject::tr("Адрес"),
+		                                  QObject::tr("Открыто сейчас"), QObject::tr("Телефон"),
+		                                  QObject::tr("Цена"), QString()});
+	} else {
+		model->setHorizontalHeaderLabels({QObject::tr("ID"), QObject::tr("Аптека"), QObject::tr("Адрес"),
+		                                  QObject::tr("Открыто сейчас"), QObject::tr("Телефон"), QString()});
+	}
+
+	for (const auto &row : rows) {
+		QList<QStandardItem*> items;
+		items << Utils::QtHelpers::makeOwned<QStandardItem>(QString::number(row.id));
+		items << Utils::QtHelpers::makeOwned<QStandardItem>(row.name);
+		items << Utils::QtHelpers::makeOwned<QStandardItem>(row.address);
+		items << Utils::QtHelpers::makeOwned<QStandardItem>(row.openNow ? QObject::tr("Открыто") : QObject::tr("Закрыто"));
+		items << Utils::QtHelpers::makeOwned<QStandardItem>(row.phone);
+		if (includePrice) {
+			items << Utils::QtHelpers::makeOwned<QStandardItem>(std::isnan(row.price) ? QString()
+				: QString::number(row.price, 'f', 2));
+		}
+		items << Utils::QtHelpers::makeOwned<QStandardItem>(QString());
+		model->appendRow(items);
+	}
+}
+} // namespace
 
 void PharmacySearchPage::fillModel()
 {
-	struct Row { quint32 id; QString name; QString address; bool open; QString phone; double price; };
-	QVector<Row> rowsOut;
 	const QString filter = getSearchEdit()->text().trimmed();
-	auto *repository = getRepository();
-	auto *mdl = getModel();
-	if (drugId == 0) {
-		for (const auto &p : repository->allPharmacies()) {
-			if (!filter.isEmpty()) {
-				if (!p.name.contains(filter, Qt::CaseInsensitive) &&
-				    !p.address.contains(filter, Qt::CaseInsensitive)) continue;
-			}
-			rowsOut.push_back({p.id, p.name, p.address, isOpenNow(p), p.phone, qQNaN()});
-		}
-	} else {
-		for (const auto &s : repository->stocksForDrug(drugId)) {
-			const auto *p = repository->findPharmacyConst(s.pharmacyId);
-			if (!p) continue;
-			if (!filter.isEmpty()) {
-				if (!p->name.contains(filter, Qt::CaseInsensitive) &&
-				    !p->address.contains(filter, Qt::CaseInsensitive)) continue;
-			}
-			rowsOut.push_back({p->id, p->name, p->address, isOpenNow(*p), p->phone, s.price});
-		}
-	}
-	// Sorting (header-driven)
-	const int priceCol = (drugId == 0 ? -1 : 5);
-	std::sort(rowsOut.begin(), rowsOut.end(), [this, priceCol](const Row &a, const Row &b){
-		if (sortSection == priceCol) {
-			if (std::isnan(a.price) && !std::isnan(b.price)) return false;
-			if (!std::isnan(a.price) && std::isnan(b.price)) return true;
-			if (!qFuzzyCompare(a.price+1, b.price+1))
-				return sortOrder == Qt::AscendingOrder ? (a.price < b.price) : (a.price > b.price);
-			return a.name.localeAwareCompare(b.name) < 0;
-		}
-		if (sortSection < 0) {
-			if (a.open != b.open) return a.open && !b.open;
-			return a.name.localeAwareCompare(b.name) < 0;
-		}
-		switch (sortSection) {
-			case 1: return sortOrder==Qt::AscendingOrder ? (a.name.localeAwareCompare(b.name) < 0)
-			                                             : (a.name.localeAwareCompare(b.name) > 0);
-			case 2: return sortOrder==Qt::AscendingOrder ? (a.address.localeAwareCompare(b.address) < 0)
-			                                             : (a.address.localeAwareCompare(b.address) > 0);
-			case 3: if (a.open != b.open) return sortOrder==Qt::AscendingOrder ? (a.open && !b.open) : (!a.open && b.open);
-			        return a.name.localeAwareCompare(b.name) < 0;
-			case 4: return sortOrder==Qt::AscendingOrder ? (a.phone.localeAwareCompare(b.phone) < 0)
-			                                             : (a.phone.localeAwareCompare(b.phone) > 0);
-			default: return a.name.localeAwareCompare(b.name) < 0;
-		}
-	});
-	// Fill model
-	for (const auto &r : rowsOut) {
-		QList<QStandardItem*> items;
-		items << Utils::QtHelpers::makeOwned<QStandardItem>(QString::number(r.id));
-		items << Utils::QtHelpers::makeOwned<QStandardItem>(r.name);
-		items << Utils::QtHelpers::makeOwned<QStandardItem>(r.address);
-		items << Utils::QtHelpers::makeOwned<QStandardItem>(r.open ? tr("Открыто") : tr("Закрыто"));
-		items << Utils::QtHelpers::makeOwned<QStandardItem>(r.phone);
-		items << Utils::QtHelpers::makeOwned<QStandardItem>(std::isnan(r.price) ? QString() : QString::number(r.price, 'f', 2));
-		items << Utils::QtHelpers::makeOwned<QStandardItem>(QString());
-		mdl->appendRow(items);
-	}
+	auto * const repository = getRepository();
+	auto rows = collectRows(repository, drugId, filter);
+	const int priceColumn = (drugId == 0 ? -1 : 5);
+	sortRows(rows, sortSection, sortOrder, priceColumn);
+
+	writeRows(getModel(), rows, priceColumn >= 0);
 }
 
 void PharmacySearchPage::onHeaderClicked(int section)

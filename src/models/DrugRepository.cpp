@@ -2,6 +2,7 @@
 #include "Serialization.h"
 
 #include <algorithm>
+#include <ranges>
 
 namespace {
 constexpr quint32 DRUG_DATA_VERSION = 1;
@@ -81,7 +82,8 @@ bool DrugRepository::updateDrug(const Drug &d)
 bool DrugRepository::removeDrug(quint32 id)
 {
 	const int before = drugs.size();
-	drugs.erase(std::remove_if(drugs.begin(), drugs.end(), [id](const Drug &drug) { return drug.id == id; }), drugs.end());
+	const auto [first, last] = std::ranges::remove_if(drugs, [id](const Drug &drug) { return drug.id == id; });
+	drugs.erase(first, last);
 	return before != drugs.size();
 }
 

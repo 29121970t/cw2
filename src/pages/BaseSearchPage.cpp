@@ -16,7 +16,7 @@ void BaseSearchPage::setupSearch()
 	connect(modeCombo, qOverload<int>(&QComboBox::currentIndexChanged), this, &BaseSearchPage::modeChanged);
 }
 
-void BaseSearchPage::setInitialFilter(const QString &text)
+void BaseSearchPage::setInitialFilter(const QString &text) const
 {
 	searchEdit->setText(text);
 }
