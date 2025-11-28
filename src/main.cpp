@@ -18,6 +18,7 @@ int main(int argc, char *argv[])
 	QApplication::setOrganizationName("CourseProject");
 
 	
+	
 	QApplication::setStyle("Fusion");
 	{
 		const auto bg        = QColor(30, 32, 34);     
