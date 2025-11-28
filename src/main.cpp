@@ -17,15 +17,15 @@ int main(int argc, char *argv[])
 	QApplication::setApplicationName("Информационная система лекарственных препаратов");
 	QApplication::setOrganizationName("CourseProject");
 
-	// Apply modern dark theme with green accents
+	
 	QApplication::setStyle("Fusion");
 	{
-		const auto bg        = QColor(30, 32, 34);     // window background
-		const auto panel     = QColor(40, 42, 46);     // panels/cards
-		const auto base      = QColor(36, 38, 41);     // inputs
-		const auto text      = QColor(235, 235, 235);  // primary text
+		const auto bg        = QColor(30, 32, 34);     
+		const auto panel     = QColor(40, 42, 46);     
+		const auto base      = QColor(36, 38, 41);     
+		const auto text      = QColor(235, 235, 235);  
 		const auto disabled  = QColor(130, 130, 130);
-		const auto accent    = QColor(34, 197, 94);    // green accent (#22c55e)
+		const auto accent    = QColor(34, 197, 94);    
 		const auto accentD   = QColor(22, 160, 78);
 
 		auto palette = QPalette{};
@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
 		palette.setColor(QPalette::Disabled, QPalette::WindowText, disabled);
 		QApplication::setPalette(palette);
 
-		// Subtle styling for widgets to match palette
+		
 		const auto css = QString(
 			"QWidget { background-color:%1; color:%2; }"
 			"QLabel { background: transparent; }"
@@ -76,19 +76,19 @@ int main(int argc, char *argv[])
 		app.setStyleSheet(css);
 	}
 
-	// Pre-initialize Qt WebEngine at app start to avoid first-use glitches (e.g., leaving fullscreen)
+	
 	{
 		auto prewarm = QWebEngineView{};
 		prewarm.setAttribute(Qt::WA_DontShowOnScreen, true);
 		prewarm.resize(1, 1);
 		prewarm.load(QUrl("about:blank"));
-		// Let the event loop process initialization tasks once
+		
 		QApplication::processEvents();
 	}
 
-	// Register application services
+	
 	{
-		// Migration from old combined Repository file
+		
 		auto migrateFromOldFile = []() -> bool {
 			const auto base = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
 			const QString oldFile = base + QDir::separator() + "drug_system.bin";
@@ -104,7 +104,7 @@ int main(int argc, char *argv[])
 				return false;
 			}
 			
-			// Read drugs
+			
 			quint32 drugCount = 0;
 			in >> drugCount;
 			QVector<Models::Drug> drugs;
@@ -124,7 +124,7 @@ int main(int argc, char *argv[])
 				drugs.push_back(d);
 			}
 			
-			// Read pharmacies
+			
 			quint32 pharmacyCount = 0;
 			in >> pharmacyCount;
 			QVector<Models::Pharmacy> pharmacies;
@@ -135,7 +135,7 @@ int main(int argc, char *argv[])
 				pharmacies.push_back(p);
 			}
 			
-			// Read stocks
+			
 			quint32 stockCount = 0;
 			in >> stockCount;
 			QVector<Models::Stock> stocks;
@@ -146,7 +146,7 @@ int main(int argc, char *argv[])
 				stocks.push_back(s);
 			}
 			
-			// Write to new separate files
+			
 			auto drugRepo = std::make_shared<Models::DrugRepository>();
 			for (const auto &d : drugs) {
 				drugRepo->addDrug(d);
@@ -162,7 +162,7 @@ int main(int argc, char *argv[])
 			}
 			pharmacyRepo->save();
 			
-			// Rename old file to mark as migrated
+			
 			f.close();
 			QFile::rename(oldFile, oldFile + ".migrated");
 			return true;
@@ -171,12 +171,12 @@ int main(int argc, char *argv[])
 		auto drugRepo = std::make_shared<Models::DrugRepository>();
 		auto pharmacyRepo = std::make_shared<Models::PharmacyRepository>();
 		
-		// Try to load from new files, if not found try migration, if still not found seed sample data
+		
 		bool drugLoaded = drugRepo->load();
 		bool pharmacyLoaded = pharmacyRepo->load();
 		
 		if (!drugLoaded || !pharmacyLoaded) {
-			// Try migration from old file
+			
 			if (migrateFromOldFile()) {
 				drugLoaded = drugRepo->load();
 				pharmacyLoaded = pharmacyRepo->load();
@@ -205,7 +205,7 @@ int main(int argc, char *argv[])
 	
 	const auto result = QApplication::exec();
 	
-	// Clean up WebEngine resources before application exit to avoid OpenGL warnings
+	
 	QApplication::processEvents();
 	
 	return result;
