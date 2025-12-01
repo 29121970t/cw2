@@ -4,11 +4,11 @@
 #include <QStackedWidget>
 #include <QToolBar>
 #include <QAction>
+#include <memory>
 #include "core/ServiceLocator.h"
-
-class DrugSearchPage;
-class PharmacySearchPage;
-class PharmacyDetailsPage;
+#include "pages/DrugSearchPage.h"
+#include "pages/PharmacySearchPage.h"
+#include "pages/PharmacyDetailsPage.h"
 
 class MainWindow : public QMainWindow {
 	Q_OBJECT
