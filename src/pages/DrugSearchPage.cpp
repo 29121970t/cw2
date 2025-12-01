@@ -25,20 +25,18 @@ void DrugSearchPage::setupUi()
 	modeCombo.addItems({tr("По препарату"), tr("По аптеке")});
 	searchField.setPlaceholderText(tr("Поиск по названию препарата (торговому или МНН)..."));
 
-	setupTable();
 	tableView.horizontalHeader()->setSortIndicatorShown(true);
 	tableView.setSortingEnabled(true);
-	setupActionsDelegate();
 
-	auto v = Utils::QtHelpers::makeOwned<QVBoxLayout>();
-	auto top = Utils::QtHelpers::makeOwned<QHBoxLayout>();
+	auto v = new QVBoxLayout();
+	auto top = new QHBoxLayout();
+
 	top->addWidget(&modeCombo);
 	top->addWidget(&searchField, 1);
 	v->addLayout(top);
 	v->addWidget(&tableView, 1);
 	setLayout(v);
 
-	setupSearch();
 	connect(&tableView, &QTableView::doubleClicked, this, &DrugSearchPage::openPharmacies);
 }
 
@@ -60,15 +58,18 @@ void DrugSearchPage::fillModel(const QVector<Models::Drug> &rows)
 		items << Utils::QtHelpers::makeOwned<QStandardItem>(QString());
 		modelPtr->appendRow(items);
 	}
+	//shit
 	applyActionsDelegateToLastColumn();
+	//raw fix
+	getTable()->setColumnHidden(0, true);
 }
-
+//make more complex
 void DrugSearchPage::refresh()
 {
 	if (!drugRepo) return;
 	fillModel(drugRepo->allDrugs());
 }
-
+//file search?
 void DrugSearchPage::filterChanged(const QString &text)
 {
 	if (!drugRepo) return;
@@ -85,7 +86,7 @@ void DrugSearchPage::filterChanged(const QString &text)
 	}
 	fillModel(filtered);
 }
-
+//store id as class member?
 quint32 DrugSearchPage::currentDrugId() const
 {
 	const auto *tableView = getTable();

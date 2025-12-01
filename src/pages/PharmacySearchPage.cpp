@@ -34,11 +34,9 @@ void PharmacySearchPage::setupUi()
 	auto *search = getSearchEdit();
 	search->setPlaceholderText(tr("Фильтр по названию или адресу..."));
 
-	setupTable();
 	auto *tbl = getTable();
 	tbl->horizontalHeader()->setSectionsClickable(true);
 	tbl->horizontalHeader()->setSortIndicatorShown(true);
-	setupActionsDelegate();
 
 	// periodic update of "open/closed" state
 	openUpdateTimer = Utils::QtHelpers::makeOwned<QTimer>(this);
@@ -54,7 +52,6 @@ void PharmacySearchPage::setupUi()
 	v->addWidget(tbl, 1);
 	setLayout(v);
 
-	setupSearch();
 	connect(tbl, &QTableView::doubleClicked, this, &PharmacySearchPage::openDetails);
 	connect(tbl->horizontalHeader(), &QHeaderView::sectionClicked, this, &PharmacySearchPage::onHeaderClicked);
 }

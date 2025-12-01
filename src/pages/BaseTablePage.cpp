@@ -5,10 +5,12 @@
 
 BaseTablePage::BaseTablePage(QWidget *parent)
 	: QWidget(parent),
-	  table(Utils::QtHelpers::makeOwned<QTableView>(this)),
-	  model(Utils::QtHelpers::makeOwned<QStandardItemModel>(this)),
-	  actionsDelegate(Utils::QtHelpers::makeOwned<Widgets::ActionButtonsDelegate>(this))
+	  table(new QTableView(this)),
+	  model(new QStandardItemModel(this)),
+	  actionsDelegate(new Widgets::ActionButtonsDelegate(this))
 {
+	setupTable();
+	applyActionsDelegateToLastColumn();
 }
 
 void BaseTablePage::setupTable()
@@ -40,7 +42,6 @@ void BaseTablePage::setupActionsDelegate()
 
 void BaseTablePage::applyActionsDelegateToLastColumn()
 {
-	table->setColumnHidden(0, true); // Hide ID column
 	for (int c = 0; c < model->columnCount(); ++c) {
 		table->setItemDelegateForColumn(c, nullptr);
 	}

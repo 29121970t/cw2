@@ -3,9 +3,10 @@
 
 BaseSearchPage::BaseSearchPage(QWidget *parent)
 	: BaseTablePage(parent),
-	  modeCombo(Utils::QtHelpers::makeOwned<QComboBox>(this)),
-	  searchEdit(Utils::QtHelpers::makeOwned<QLineEdit>(this))
+	  modeCombo(new QComboBox(this)),
+	  searchEdit(new QLineEdit(this))
 {
+	setupSearch();
 }
 
 void BaseSearchPage::setupSearch() const
