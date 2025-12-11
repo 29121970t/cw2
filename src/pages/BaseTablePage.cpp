@@ -1,7 +1,7 @@
 #include "BaseTablePage.h"
 #include <QHeaderView>
 #include <QMouseEvent>
-#include "../utils/QtHelpers.h"
+
 
 BaseTablePage::BaseTablePage(QWidget *parent)
 	: QWidget(parent),
@@ -10,6 +10,7 @@ BaseTablePage::BaseTablePage(QWidget *parent)
 	  actionsDelegate(new Widgets::ActionButtonsDelegate(this))
 {
 	setupTable();
+	setupActionsDelegate();
 	applyActionsDelegateToLastColumn();
 }
 
@@ -20,8 +21,10 @@ void BaseTablePage::setupTable()
 	table->setSelectionBehavior(QAbstractItemView::SelectRows);
 	table->setSelectionMode(QAbstractItemView::SingleSelection);
 	table->setEditTriggers(QAbstractItemView::NoEditTriggers);
+	table->setFocusPolicy(Qt::FocusPolicy::NoFocus);
 	table->setMouseTracking(true);
 	table->viewport()->installEventFilter(this);
+	table->verticalHeader()->setVisible(false);
 }
 
 void BaseTablePage::setupActionsDelegate()
@@ -42,9 +45,6 @@ void BaseTablePage::setupActionsDelegate()
 
 void BaseTablePage::applyActionsDelegateToLastColumn()
 {
-	for (int c = 0; c < model->columnCount(); ++c) {
-		table->setItemDelegateForColumn(c, nullptr);
-	}
 	table->setItemDelegateForColumn(model->columnCount()-1, actionsDelegate);
 	auto *hdr = table->horizontalHeader();
 	hdr->setSectionResizeMode(QHeaderView::Stretch);

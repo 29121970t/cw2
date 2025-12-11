@@ -6,7 +6,6 @@
 #include <QPair>
 #include <QDataStream>
 
-class QDataStream;
 
 namespace Models {
 
@@ -70,7 +69,7 @@ struct Pharmacy {
 		return in;
 	}
 };
-
+//НАХУЙ pharmacyId НУЖЕН?
 struct Stock {
 	quint32 drugId = 0;
 	quint32 pharmacyId = 0;

@@ -3,6 +3,8 @@
 #include <QWidget>
 #include <QWebEngineView>
 #include <QWebChannel>
+#include <QStackedWidget>
+
 
 namespace Widgets {
 
@@ -18,8 +20,10 @@ signals:
 	void coordinatePicked(double latitude, double longitude);
 
 private:
-	QWebEngineView *web;
+	QWebEngineView *web = nullptr;
 	QWebChannel *channel = nullptr;
+	QStackedWidget * stack = nullptr;
+
 	double lat = 0.0;
 	double lon = 0.0;
 	bool pickMode = false;

@@ -5,12 +5,12 @@
 #include <QMessageBox>
 #include "../dialogs/DrugDialog.h"
 #include "../core/ServiceLocator.h"
-#include "../utils/QtHelpers.h"
+
 
 DrugSearchPage::DrugSearchPage(QWidget *parent)
 	: BaseSearchPage(parent),
 	  drugRepo(Core::ServiceLocator::get<Models::DrugRepository>()),
-	  dlg(Utils::QtHelpers::makeOwned<DrugDialog>(this))
+	  dlg(new DrugDialog(this))
 {
 	setupUi();
 	refresh();
@@ -20,6 +20,7 @@ void DrugSearchPage::setupUi()
 {
 	auto &modeCombo = *getModeCombo();
 	auto &searchField = *getSearchEdit();
+	auto & addButton = *getAddButton();
 	auto &tableView = *getTable();
 
 	modeCombo.addItems({tr("По препарату"), tr("По аптеке")});
@@ -32,6 +33,9 @@ void DrugSearchPage::setupUi()
 	auto top = new QHBoxLayout();
 
 	top->addWidget(&modeCombo);
+	top->addWidget(&addButton);
+	addButton.setVisible(getAllowAdd());
+
 	top->addWidget(&searchField, 1);
 	v->addLayout(top);
 	v->addWidget(&tableView, 1);
@@ -48,18 +52,20 @@ void DrugSearchPage::fillModel(const QVector<Models::Drug> &rows)
 	                                  tr("Страна"), tr("Рецепт"), QString()});
 	for (const auto &d : rows) {
 		QList<QStandardItem*> items;
-		items << Utils::QtHelpers::makeOwned<QStandardItem>(QString::number(d.id));
-		items << Utils::QtHelpers::makeOwned<QStandardItem>(d.tradeName);
-		items << Utils::QtHelpers::makeOwned<QStandardItem>(d.medicalName);
-		items << Utils::QtHelpers::makeOwned<QStandardItem>(d.manufacturer);
-		items << Utils::QtHelpers::makeOwned<QStandardItem>(d.dosageForm);
-		items << Utils::QtHelpers::makeOwned<QStandardItem>(d.country);
-		items << Utils::QtHelpers::makeOwned<QStandardItem>(d.prescriptionRequired ? tr("Да") : tr("Нет"));
-		items << Utils::QtHelpers::makeOwned<QStandardItem>(QString());
+		items << new QStandardItem(QString::number(d.id));
+		items << new QStandardItem(d.tradeName);
+		items << new QStandardItem(d.medicalName);
+		items << new QStandardItem(d.manufacturer);
+		items << new QStandardItem(d.dosageForm);
+		items << new QStandardItem(d.country);
+		items << new QStandardItem(d.prescriptionRequired ? tr("Да") : tr("Нет"));
+		items << new QStandardItem(QString());
 		modelPtr->appendRow(items);
 	}
 	//shit
 	applyActionsDelegateToLastColumn();
+
+
 	//raw fix
 	getTable()->setColumnHidden(0, true);
 }
@@ -95,45 +101,7 @@ quint32 DrugSearchPage::currentDrugId() const
 	return getModel()->item(sel.first().row(), 0)->text().toUInt();
 }
 
-void DrugSearchPage::addDrug()
-{
-	if (!drugRepo) return;
-	dlg->reset();
-	if (dlg->exec() == QDialog::Accepted) {
-		Models::Drug d = dlg->value();
-		drugRepo->addDrug(d);
-		drugRepo->save();
-		refresh();
-	}
-}
 
-void DrugSearchPage::editDrug()
-{
-	if (!drugRepo) return;
-	auto id = currentDrugId();
-	if (!id) return;
-	auto *d = drugRepo->findDrug(id);
-	if (!d) return;
-	dlg->setValue(*d);
-	if (dlg->exec() == QDialog::Accepted) {
-		*d = dlg->value(); d->id = id;
-		drugRepo->updateDrug(*d);
-		drugRepo->save();
-		refresh();
-	}
-}
-
-void DrugSearchPage::deleteDrug()
-{
-	if (!drugRepo) return;
-	auto id = currentDrugId();
-	if (!id) return;
-	if (QMessageBox::question(this, tr("Удалить"), tr("Удалить выбранный препарат?")) == QMessageBox::Yes) {
-		drugRepo->removeDrug(id);
-		drugRepo->save();
-		refresh();
-	}
-}
 
 void DrugSearchPage::openPharmacies()
 {
@@ -149,17 +117,45 @@ void DrugSearchPage::openPharmacies()
 
 void DrugSearchPage::onRowAdd(int row)
 {
-	addDrug();
+	if (!drugRepo) return;
+	dlg->reset();
+	if (dlg->exec() == QDialog::Accepted) {
+		Models::Drug d = dlg->value();
+		drugRepo->addDrug(d);
+		drugRepo->save();
+		refresh();
+	}
+}
+void DrugSearchPage::addElement(){
+	onRowAdd(0);
 }
 
 void DrugSearchPage::onRowEdit(int row)
 {
-	editDrug();
+	if (!drugRepo) return;
+	auto id = currentDrugId();
+	if (!id) return;
+	auto *d = drugRepo->findDrug(id);
+	if (!d) return;
+	dlg->setValue(*d);
+	if (dlg->exec() == QDialog::Accepted) {
+		*d = dlg->value(); d->id = id;
+		drugRepo->updateDrug(*d);
+		drugRepo->save();
+		refresh();
+	}
 }
 
 void DrugSearchPage::onRowDelete(int row)
 {
-	deleteDrug();
+	if (!drugRepo) return;
+	auto id = currentDrugId();
+	if (!id) return;
+	if (QMessageBox::question(this, tr("Удалить"), tr("Удалить выбранный препарат?")) == QMessageBox::Yes) {
+		drugRepo->removeDrug(id);
+		drugRepo->save();
+		refresh();
+	}
 }
 
 void DrugSearchPage::modeChanged(int index)

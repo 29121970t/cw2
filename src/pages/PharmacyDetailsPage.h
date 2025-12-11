@@ -41,6 +41,7 @@ private:
 	QLabel *labelPhone = nullptr;
 	QTableWidget *scheduleView = nullptr;
 	Widgets::MapWebView *map = nullptr;
+	QPushButton *addStockButton = nullptr;
 	QPushButton *btnEditPharmacy = nullptr;
 	StockDialog *stockDlg = nullptr;
 	PharmacyDialog *pharmacyDlg = nullptr;

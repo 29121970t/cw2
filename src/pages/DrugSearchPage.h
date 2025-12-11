@@ -1,37 +1,33 @@
 #pragma once
 
-#include "BaseSearchPage.h"
 #include "../dialogs/DrugDialog.h"
 #include "../models/DrugRepository.h"
+#include "BaseSearchPage.h"
 
 class DrugSearchPage : public BaseSearchPage {
-	Q_OBJECT
-public:
-	explicit DrugSearchPage(QWidget *parent = nullptr);
+    Q_OBJECT
+   public:
+    explicit DrugSearchPage(QWidget* parent = nullptr);
 
-signals:
-	void openPharmaciesForDrug(quint32 drugId);
-	void switchToPharmacySearch(const QString &initialQuery);
+   signals:
+    void openPharmaciesForDrug(quint32 drugId);
+    void switchToPharmacySearch(const QString& initialQuery);
 
-private slots:
-	void refresh();
-	void filterChanged(const QString &text) override;
-	void addDrug();
-	void editDrug();
-	void deleteDrug();
-	void openPharmacies();
-	void modeChanged(int index) override;
-	void onRowAdd(int row) override;
-	void onRowEdit(int row) override;
-	void onRowDelete(int row) override;
+   private slots:
+    void refresh();
+    void filterChanged(const QString& text) override;
+    void openPharmacies();
+    void addElement() override;
+    void modeChanged(int index) override;
+    void onRowAdd(int row) override;
+    void onRowEdit(int row) override;
+    void onRowDelete(int row) override;
 
-private:
-	void setupUi();
-	void fillModel(const QVector<Models::Drug> &rows);
-	quint32 currentDrugId() const;
+   private:
+    void setupUi();
+    void fillModel(const QVector<Models::Drug>& rows);
+    quint32 currentDrugId() const;
 
-	Models::DrugRepository *drugRepo = nullptr;
-	DrugDialog *dlg = nullptr;
+    Models::DrugRepository* drugRepo = nullptr;
+    DrugDialog* dlg = nullptr;
 };
-
-

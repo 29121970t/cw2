@@ -13,6 +13,7 @@ public:
 	virtual ~BaseRepository() = default;
 
 protected:
+	//just shit
 	QString dataFilePath() const;
 	bool readFromFile(const std::function<bool(QDataStream&)> &reader) const;
 	bool writeToFile(const std::function<bool(QDataStream&)> &writer) const;

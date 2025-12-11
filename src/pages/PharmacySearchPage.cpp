@@ -14,15 +14,14 @@
 #include "../dialogs/StockDialog.h"
 #include "../core/ServiceLocator.h"
 #include "../utils/PharmacyUtils.h"
-#include "../utils/QtHelpers.h"
-#include <cmath>
+
 
 PharmacySearchPage::PharmacySearchPage(QWidget *parent)
 	: BaseSearchPage(parent),
 	  drugRepo(Core::ServiceLocator::get<Models::DrugRepository>()),
 	  pharmacyRepo(Core::ServiceLocator::get<Models::PharmacyRepository>()),
-	  stockDlg(Utils::QtHelpers::makeOwned<StockDialog>(this)),
-	  pharmacyDlg(Utils::QtHelpers::makeOwned<PharmacyDialog>(this))
+	  stockDlg(new StockDialog(this)),
+	  pharmacyDlg(new PharmacyDialog(this))
 {
 	setupUi();
 }
@@ -30,6 +29,7 @@ PharmacySearchPage::PharmacySearchPage(QWidget *parent)
 void PharmacySearchPage::setupUi()
 {
 	auto *mode = getModeCombo();
+	auto & addButton = *getAddButton();
 	mode->addItems({tr("По аптеке"), tr("По препарату")});
 	auto *search = getSearchEdit();
 	search->setPlaceholderText(tr("Фильтр по названию или адресу..."));
@@ -39,15 +39,18 @@ void PharmacySearchPage::setupUi()
 	tbl->horizontalHeader()->setSortIndicatorShown(true);
 
 	// periodic update of "open/closed" state
-	openUpdateTimer = Utils::QtHelpers::makeOwned<QTimer>(this);
+	openUpdateTimer = new QTimer(this);
 	openUpdateTimer->setInterval(30000); // 30s
 	connect(openUpdateTimer, &QTimer::timeout, this, &PharmacySearchPage::refresh);
 	openUpdateTimer->start();
 
-	auto v = Utils::QtHelpers::makeOwned<QVBoxLayout>();
-	auto top = Utils::QtHelpers::makeOwned<QHBoxLayout>();
+	auto v = new QVBoxLayout();
+	auto top = new QHBoxLayout();
 	top->addWidget(mode);
+	top->addWidget(&addButton);
+	setVisible(getAllowAdd());
 	top->addWidget(search, 1);
+
 	v->addLayout(top);
 	v->addWidget(tbl, 1);
 	setLayout(v);
@@ -69,6 +72,8 @@ void PharmacySearchPage::refresh()
 	if (sortSection >= 0) {
 		getTable()->horizontalHeader()->setSortIndicator(sortSection, sortOrder);
 	}
+	getTable()->setColumnHidden(0, true);
+
 }
 
 namespace {
@@ -234,18 +239,20 @@ void writeRows(QStandardItemModel *model, const QVector<RowData> &rows, bool inc
 
 	for (const auto &row : rows) {
 		QList<QStandardItem*> items;
-		items << Utils::QtHelpers::makeOwned<QStandardItem>(QString::number(row.id));
-		items << Utils::QtHelpers::makeOwned<QStandardItem>(row.name);
-		items << Utils::QtHelpers::makeOwned<QStandardItem>(row.address);
-		items << Utils::QtHelpers::makeOwned<QStandardItem>(row.openNow ? QObject::tr("Открыто") : QObject::tr("Закрыто"));
-		items << Utils::QtHelpers::makeOwned<QStandardItem>(row.phone);
+		items << new QStandardItem(QString::number(row.id));
+		items << new QStandardItem(row.name);
+		items << new QStandardItem(row.address);
+		items << new QStandardItem(row.openNow ? QObject::tr("Открыто") : QObject::tr("Закрыто"));
+		items << new QStandardItem(row.phone);
 		if (includePrice) {
-			items << Utils::QtHelpers::makeOwned<QStandardItem>(std::isnan(row.price) ? QString()
+			items << new QStandardItem(std::isnan(row.price) ? QString()
 				: QString::number(row.price, 'f', 2));
 		}
-		items << Utils::QtHelpers::makeOwned<QStandardItem>(QString());
+		items << new QStandardItem(QString());
 		model->appendRow(items);
+		
 	}
+	
 }
 } // namespace
 
@@ -270,6 +277,10 @@ void PharmacySearchPage::onHeaderClicked(int section)
 	}
 	getTable()->horizontalHeader()->setSortIndicator(sortSection, sortOrder);
 	refresh();
+}
+
+void PharmacySearchPage::addElement(){
+	addPharmacy();
 }
 
 void PharmacySearchPage::filterChanged(const QString &)

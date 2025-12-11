@@ -1,0 +1,119 @@
+/* Базовые цвета */
+* {
+  color: palette(WindowText);
+  background-color: palette(Base);
+
+}
+QTableView::item:hover {
+    border-color: palette(Highlight);
+}
+QWidget {
+  background-color: palette(Window);
+  color: palette(WindowText);
+}
+
+/* Прозрачные элементы */
+QLabel { 
+  background: transparent; 
+}
+
+/* Элементы с фоном Window */
+QGroupBox, 
+QToolBar { 
+  background-color: palette(Window); 
+}
+
+/* Общие стили для полей ввода */
+QLineEdit,
+QComboBox,
+QTextEdit,
+QPlainTextEdit,
+QSpinBox,
+QDoubleSpinBox,
+QTimeEdit,
+QToolBar > * {
+  background-color: palette(Base);
+  border: 1px solid #3a3d41;
+  padding: 4px 6px;
+}
+
+
+/* Стили для QComboBox */
+QComboBox:hover, QToolBar > *:hover { border-color: palette(Highlight); }
+QComboBox::item { color: palette(Text); }
+QComboBox QAbstractItemView {
+  background-color: palette(Base);
+  color: palette(WindowText);
+  border: 1px solid #3a3d41;
+  padding: 4px;
+}
+
+/* Стили для кнопок */
+QPushButton {
+  background-color: palette(Base);
+  border: 1px solid #3a3d41;
+  padding: 6px 10px;
+}
+
+QPushButton:hover,
+QLineEdit:hover {
+  border-color: palette(Highlight);
+}
+
+QPushButton:pressed {
+  background-color: palette(Base);
+}
+
+/* Акцентные кнопки */
+QPushButton[accent="true"],
+.accent {
+  background-color: palette(Highlight);
+  color: palette(Text);
+  border: 1px solid palette(Highlight);
+}
+
+/* Стили для спинбоксов */
+QAbstractSpinBox::up-button,
+QAbstractSpinBox::down-button {
+  subcontrol-origin: padding;
+  width: 18px;
+  border: none;
+  background: transparent;
+  margin: 1px;
+}
+
+QAbstractSpinBox::up-arrow {
+  image: url(:/icons/icons/chevron-up.svg);
+}
+
+QAbstractSpinBox::down-arrow {
+  image: url(:/icons/icons/chevron-down.svg);
+}
+
+/* Таблицы */
+QHeaderView::section {
+  background: palette(Window);
+  color: palette(WindowText);
+  padding: 6px;
+  border: 1px solid #3a3d41;
+  gridline-color: #3a3d41;
+}
+
+QTableView {
+  gridline-color: #3a3d41;
+  background-color: palette(Base);
+}
+
+/* Контекстные меню */
+QMenu {
+  background-color: palette(Window);
+  color: palette(WindowText);
+  border: 1px solid #3a3d41;
+}
+
+/* Всплывающие подсказки */
+QToolTip {
+  background-color: palette(Window);
+  color: palette(WindowText);
+  border: 1px solid #3a3d41;
+}

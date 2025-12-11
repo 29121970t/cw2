@@ -7,11 +7,14 @@
 #include <QVariant>
 #include <QApplication>
 #include <QFile>
-#include "../utils/QtHelpers.h"
+
+#include <QStackedWidget>
 
 namespace Widgets {
 
 namespace {
+
+
 
 QString loadTemplate(const QString &path)
 {
@@ -37,30 +40,28 @@ signals:
 };
 
 MapWebView::MapWebView(QWidget *parent)
-	: QWidget(parent), web(Utils::QtHelpers::makeOwned<QWebEngineView>(this))
+	: QWidget(parent), web(
+		new QWebEngineView{this}),
+	stack(new QStackedWidget(this))
 {
-	auto v = Utils::QtHelpers::makeOwned<QVBoxLayout>();
+	stack->addWidget(web);
+	auto v = new QVBoxLayout();
 	v->setContentsMargins(0,0,0,0);
-	v->addWidget(web, 1);
+	v->addWidget(stack, 1);
 	setLayout(v);
 }
 
 MapWebView::~MapWebView()
 {
-	// Explicitly close the web view before destruction to avoid OpenGL context warnings
 	if (web) {
-		// Stop loading and clear the page
 		web->stop();
 		web->page()->setUrl(QUrl("about:blank"));
-		// Process events to ensure cleanup happens
 		QApplication::processEvents();
-		// The web view will be automatically deleted as a child widget
 	}
 }
 
 void MapWebView::setLocation(double latitude, double longitude)
 {
-	lat = latitude; lon = longitude;
 	if (const auto apiKey = QProcessEnvironment::systemEnvironment().value("GOOGLE_MAPS_API_KEY"); apiKey.isEmpty()) {
 		loadErrorPage(QString::fromUtf8("Ключ Google Maps не указан. Установите переменную окружения GOOGLE_MAPS_API_KEY. "
 		                                "Карта не будет загружена без действительного ключа."));
@@ -91,10 +92,10 @@ void MapWebView::loadErrorPage(const QString &message)
 	                             QString::number(lat, 'f', 6),
 	                             QString::number(lon, 'f', 6));
 	if (pickMode && !channel) {
-		channel = Utils::QtHelpers::makeOwned<QWebChannel>(this);
-		auto *bridge = Utils::QtHelpers::makeOwned<MapBridge>(this);
+		channel = new QWebChannel(this);
+		auto *bridge = new MapBridge(this);
 		connect(bridge, &MapBridge::picked, this, [this](double la, double lo){
-			lat = la; lon = lo; emit coordinatePicked(la, lo);
+			 emit coordinatePicked(la, lo);
 		});
 		channel->registerObject("bridge", bridge);
 		web->page()->setWebChannel(channel);
@@ -108,8 +109,8 @@ void MapWebView::loadInteractive()
 	if (apiKey.isEmpty()) { loadErrorPage(QString::fromUtf8("Ключ Google Maps не указан. Установите GOOGLE_MAPS_API_KEY.")); return; }
 	// Setup webchannel bridge for click picking if requested
 	if (!channel) {
-		channel = Utils::QtHelpers::makeOwned<QWebChannel>(this);
-		auto *bridge = Utils::QtHelpers::makeOwned<MapBridge>(this);
+		channel = new QWebChannel(this);
+		auto *bridge = new MapBridge(this);
 		connect(bridge, &MapBridge::picked, this, [this](double la, double lo){
 			lat = la; lon = lo; emit coordinatePicked(la, lo);
 		});

@@ -1,33 +1,32 @@
 #pragma once
 
+#include <QVector>
+
 #include "BaseRepository.h"
 #include "Entities.h"
-#include <QVector>
 
 namespace Models {
 
 class DrugRepository : public BaseRepository {
-public:
-	DrugRepository();
+   public:
+    DrugRepository();
 
-	bool load();
-	bool save() const;
-	void seedSampleData();
+    bool load();
+    bool save() const;
+    void seedSampleData();
 
-	const QVector<Drug>& allDrugs() const { return drugs; }
+    const QVector<Drug>& allDrugs() const { return drugs; }
 
-	quint32 addDrug(const Drug &d);
-	bool updateDrug(const Drug &d);
-	bool removeDrug(quint32 id);
-	Drug* findDrug(quint32 id);
-	const Drug* findDrugConst(quint32 id) const;
+    quint32 addDrug(const Drug& d);
+    bool updateDrug(const Drug& d);
+    bool removeDrug(quint32 id);
+    Drug* findDrug(quint32 id);
+    const Drug* findDrugConst(quint32 id) const;
 
-private:
-	quint32 nextDrugId() const;
+   private:
+    quint32 nextDrugId() const;
 
-	QVector<Drug> drugs;
+    QVector<Drug> drugs;
 };
 
-} // namespace Models
-
-
+}  // namespace Models

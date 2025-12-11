@@ -2,14 +2,14 @@
 #include "../core/ServiceLocator.h"
 #include "../models/DrugRepository.h"
 #include "../models/PharmacyRepository.h"
-#include "../utils/QtHelpers.h"
+
 #include <QMessageBox>
 
 StockDialog::StockDialog(QWidget *parent)
 	: BaseDialog(tr("Наличие/Цена"), parent),
-	  cbDrug(Utils::QtHelpers::makeOwned<QComboBox>(this)),
-	  cbPharmacy(Utils::QtHelpers::makeOwned<QComboBox>(this)),
-	  spPrice(Utils::QtHelpers::makeOwned<QDoubleSpinBox>(this))
+	  cbDrug(new QComboBox(this)),
+	  cbPharmacy(new QComboBox(this)),
+	  spPrice(new QDoubleSpinBox(this))
 {
 	spPrice->setRange(0, 100000); spPrice->setDecimals(2);
 

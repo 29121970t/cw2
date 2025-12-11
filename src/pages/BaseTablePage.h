@@ -27,6 +27,7 @@ protected:
 	QStandardItemModel* getModel() const { return model; }
 	Widgets::ActionButtonsDelegate* getActionsDelegate() const { return actionsDelegate; }
 
+
 protected slots:
 	// Virtual slots for derived classes to implement
 	virtual void onRowAdd(int row) = 0;

@@ -1,17 +1,17 @@
 #include "DrugDialog.h"
 #include <QMessageBox>
-#include "../utils/QtHelpers.h"
+
 
 DrugDialog::DrugDialog(QWidget *parent)
 	: BaseDialog(tr("Препарат"), parent),
-	  eTrade(Utils::QtHelpers::makeOwned<QLineEdit>(this)),
-	  eMedical(Utils::QtHelpers::makeOwned<QLineEdit>(this)),
-	  eManufacturer(Utils::QtHelpers::makeOwned<QLineEdit>(this)),
-	  eForm(Utils::QtHelpers::makeOwned<QLineEdit>(this)),
-	  eCountry(Utils::QtHelpers::makeOwned<QLineEdit>(this)),
-	  cbRx(Utils::QtHelpers::makeOwned<QCheckBox>(tr("Требуется рецепт"), this))
+	  eTrade(new QLineEdit(this)),
+	  eMedical(new QLineEdit(this)),
+	  eManufacturer(new QLineEdit(this)),
+	  eForm(new QLineEdit(this)),
+	  eCountry(new QLineEdit(this)),
+	  cbRx(new QCheckBox(tr("Требуется рецепт"), this))
 {
-	eTrade->setPlaceholderText(tr("Например, НО-ШПА"));
+	eTrade->setPlaceholderText(tr("Торговое название"));
 	eMedical->setPlaceholderText(tr("Международное непатентованное наименование"));
 	eManufacturer->setPlaceholderText(tr("Производитель"));
 	eForm->setPlaceholderText(tr("Форма выпуска, дозировка"));
