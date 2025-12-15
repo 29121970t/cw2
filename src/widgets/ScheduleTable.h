@@ -12,7 +12,7 @@ class ScheduleTable : public QTableWidget {
    public:
     explicit ScheduleTable(QWidget* parent = nullptr);
 
-    void setHours(const QVector<QPair<QTime, QTime>>& hours);
+    void setHours (const QVector<QPair<QTime, QTime>>& hours) const;
     QVector<QPair<QTime, QTime>> hours() const;
 };
 

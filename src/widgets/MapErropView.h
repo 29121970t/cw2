@@ -15,7 +15,6 @@ class MapErropView : public QWidget {
 
    public:
     MapErropView(/* args */);
-    ~MapErropView();
     void setErrorMassage(const QString& string);
     void setVisiblePickers(bool val);
     void setPickerValues(double la, double lo);

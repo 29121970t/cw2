@@ -42,7 +42,7 @@ PharmacySearchPage::PharmacySearchPage(QWidget* parent)
     auto top = new QHBoxLayout();
     top->addWidget(mode);
     top->addWidget(&addButton);
-    setVisible(getAllowAdd());
+    getAllowAdd();
     top->addWidget(search, 1);
 
     v->addLayout(top);
@@ -197,7 +197,7 @@ void sortRows(QVector<RowData>& rows, int sortSection, Qt::SortOrder order, int 
     std::ranges::stable_sort(rows, comparator);
 }
 
-void writeRows(QStandardItemModel* model, const QVector<RowData>& rows, bool includePrice) {
+void writeRows(QStandardItemModel* model, const QVector<RowData>& rows) {
     if (!model) return;
     model->clear();
     model->setHorizontalHeaderLabels({QObject::tr("ID"), QObject::tr("Цена"), QObject::tr("Аптека"), QObject::tr("Открыто сейчас"),
@@ -224,7 +224,7 @@ void PharmacySearchPage::fillModel() const {
     const int priceColumn = (drugId ? 1 : -1);
     sortRows(rows, sortSection, sortOrder, priceColumn);
 
-    writeRows(getModel(), rows, priceColumn >= 0);
+    writeRows(getModel(), rows);
     if (priceColumn >= 0) {
         getTable()->setColumnHidden(1, false);
     } else {
@@ -292,7 +292,7 @@ void PharmacySearchPage::onRowEdit(int row) {
         pharmacyRepo->updatePharmacy(*p);
         pharmacyRepo->save();
         refresh();
-    };
+    }
 }
 
 void PharmacySearchPage::onRowDelete(int row) {

@@ -30,7 +30,6 @@ int main(int argc, char* argv[]) {
         const auto text = QColor(235, 235, 235);
         const auto disabled = QColor(130, 130, 130);
         const auto accent = QColor(23, 166, 76);
-        const auto accentD = QColor(22, 160, 78);
 
         auto palette = QPalette{};
         palette.setColor(QPalette::Window, bg);

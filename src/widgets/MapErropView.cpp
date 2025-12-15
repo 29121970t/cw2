@@ -32,7 +32,7 @@ MapErropView::MapErropView()
     h->setStretch(1, 1);
     setLayout(h);
 }
-MapErropView::~MapErropView() {}
+
 
 void MapErropView::setErrorMassage(const QString& string) { errorMassage->setText(string); }
 void MapErropView::setVisiblePickers(bool val) {

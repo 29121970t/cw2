@@ -31,7 +31,7 @@ void DrugSearchPage::setupUi() {
     tableView.horizontalHeader()->setSortIndicatorShown(true);
     tableView.setSortingEnabled(true);
 
-    QSortFilterProxyModel* proxyModel = new QSortFilterProxyModel(this);
+    auto proxyModel = new QSortFilterProxyModel(this);
     proxyModel->setSourceModel(getModel());
     tableView.setModel(proxyModel);
 

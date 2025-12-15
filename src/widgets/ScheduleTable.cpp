@@ -29,7 +29,7 @@ ScheduleTable::ScheduleTable(QWidget* parent) : QTableWidget(7, 3, parent) {
     }
 }
 
-void ScheduleTable::setHours(const QVector<QPair<QTime, QTime>>& h) {
+void ScheduleTable::setHours (const QVector<QPair<QTime, QTime>>& h) const{
     for (int i = 0; i < 7 && i < h.size(); ++i) {
         auto* const e1 = qobject_cast<QTimeEdit*>(cellWidget(i, 1));
         auto* const e2 = qobject_cast<QTimeEdit*>(cellWidget(i, 2));
