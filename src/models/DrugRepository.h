@@ -13,7 +13,7 @@ class DrugRepository : public BaseRepository {
 
     bool load();
     bool save() const;
-    
+
     const QVector<Drug>& allDrugs() const { return drugs; }
 
     quint32 addDrug(const Drug& d);

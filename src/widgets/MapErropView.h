@@ -1,11 +1,10 @@
 #pragma once
-#include <QLabel>
 #include <QDoubleSpinBox>
 #include <QFormLayout>
+#include <QLabel>
 
-namespace Widgets
-{
-    class MapErropView : public QWidget {
+namespace Widgets {
+class MapErropView : public QWidget {
     Q_OBJECT;
 
    private:
@@ -22,6 +21,5 @@ namespace Widgets
     void setPickerValues(double la, double lo);
    signals:
     void inputChanged(double la, double lo);
-
 };
-} // namespace Widgets
+}  // namespace Widgets

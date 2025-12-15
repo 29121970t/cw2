@@ -25,8 +25,6 @@ QString loadTemplate(const QString& path) {
     return QString::fromUtf8(file.readAll());
 }
 
-
-
 class MapBridge : public QObject {
     Q_OBJECT
    public:
@@ -84,7 +82,6 @@ void MapWebView::loadInteractive() {
         loadErrorPage(QString::fromUtf8("Ключ Google Maps не указан. Установите GOOGLE_MAPS_API_KEY."));
         return;
     }
-    // Setup webchannel bridge for click picking if requested
     if (!channel) {
         channel = new QWebChannel(this);
         auto* bridge = new MapBridge(this);
@@ -102,7 +99,6 @@ void MapWebView::loadInteractive() {
     }
     const QString html = tpl.arg(apiKey, QString::number(lat, 'f', 6), QString::number(lon, 'f', 6), pickMode ? "true" : "false");
     web->setHtml(html, QUrl("qrc:/map/"));
-    // Verify API loaded; if failed (bad key/restrictions) display readable message
     connect(web, &QWebEngineView::loadFinished, this, [this](bool ok) {
         if (!ok) return;
         QTimer::singleShot(1200, this, [this]() {

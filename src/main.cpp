@@ -56,8 +56,7 @@ int main(int argc, char* argv[]) {
         QFile file(":style/index.qss");
         if (file.open(QFile::ReadOnly)) {
             app.setStyleSheet(file.readAll());
-        }
-        else{
+        } else {
             qInfo() << "cannot open stylesheet file ";
         }
     }
@@ -66,8 +65,8 @@ int main(int argc, char* argv[]) {
         auto drugRepo = std::make_shared<Models::DrugRepository>();
         auto pharmacyRepo = std::make_shared<Models::PharmacyRepository>();
 
-        bool drugLoaded = drugRepo->load();
-        bool pharmacyLoaded = pharmacyRepo->load();
+        drugRepo->load();
+        pharmacyRepo->load();
 
         Core::ServiceLocator::registerService<Models::DrugRepository>(drugRepo);
         Core::ServiceLocator::registerService<Models::PharmacyRepository>(pharmacyRepo);

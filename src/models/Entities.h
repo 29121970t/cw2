@@ -40,8 +40,7 @@ struct Pharmacy {
 	QString phone;
 	double latitude = 0.0;
 	double longitude = 0.0;
-	// 7 entries, Mon..Sun (Qt: Monday=1)
-	QVector<QPair<QTime,QTime>> hours; // invalid times -> closed
+	QVector<QPair<QTime,QTime>> hours;
 
 	friend QDataStream& operator<<(QDataStream &out, const Pharmacy &p)
 	{
@@ -69,7 +68,6 @@ struct Pharmacy {
 		return in;
 	}
 };
-//НАХУЙ pharmacyId НУЖЕН?
 struct Stock {
 	quint32 drugId = 0;
 	quint32 pharmacyId = 0;

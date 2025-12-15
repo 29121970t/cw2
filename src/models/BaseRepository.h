@@ -1,27 +1,24 @@
 #pragma once
 
-#include <functional>
 #include <QString>
+#include <functional>
 
 class QDataStream;
 
 namespace Models {
 
 class BaseRepository {
-public:
-	explicit BaseRepository(const QString &fileName);
-	virtual ~BaseRepository() = default;
+   public:
+    explicit BaseRepository(const QString& fileName);
+    virtual ~BaseRepository() = default;
 
-protected:
-	//just shit
-	QString dataFilePath() const;
-	bool readFromFile(const std::function<bool(QDataStream&)> &reader) const;
-	bool writeToFile(const std::function<bool(QDataStream&)> &writer) const;
+   protected:
+    QString dataFilePath() const;
+    bool readFromFile(const std::function<bool(QDataStream&)>& reader) const;
+    bool writeToFile(const std::function<bool(QDataStream&)>& writer) const;
 
-private:
-	QString fileName;
+   private:
+    QString fileName;
 };
 
-} // namespace Models
-
-
+}  // namespace Models

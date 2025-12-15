@@ -2,30 +2,27 @@
 
 #include <QDialog>
 #include <QDialogButtonBox>
-#include <QVBoxLayout>
 #include <QFormLayout>
+#include <QVBoxLayout>
 
 class BaseDialog : public QDialog {
-	Q_OBJECT
-public:
-	explicit BaseDialog(const QString &title, QWidget *parent = nullptr);
+    Q_OBJECT
+   public:
+    explicit BaseDialog(const QString& title, QWidget* parent = nullptr);
 
-protected:
-	// Common dialog setup
-	void setupButtons() const;
-	void setupLayout();
-	
-	// Accessors
-	QFormLayout* getFormLayout() const { return formLayout; }
-	QVBoxLayout* getMainLayout() const { return mainLayout; }
-	QDialogButtonBox* getButtonBox() const { return buttonBox; }
+   protected:
+    void setupButtons() const;
+    void setupLayout();
 
-protected slots:
-	virtual void onAccept() = 0;
+    QFormLayout* getFormLayout() const { return formLayout; }
+    QVBoxLayout* getMainLayout() const { return mainLayout; }
+    QDialogButtonBox* getButtonBox() const { return buttonBox; }
 
-private:
-	QFormLayout *formLayout = nullptr;
-	QVBoxLayout *mainLayout = nullptr;
-	QDialogButtonBox *buttonBox = nullptr;
+   protected slots:
+    virtual void onAccept() = 0;
+
+   private:
+    QFormLayout* formLayout = nullptr;
+    QVBoxLayout* mainLayout = nullptr;
+    QDialogButtonBox* buttonBox = nullptr;
 };
-

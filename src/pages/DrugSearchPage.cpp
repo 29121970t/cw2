@@ -10,8 +10,6 @@
 #include "../dialogs/DrugDialog.h"
 #include "../models/PharmacyRepository.h"
 
-
-
 DrugSearchPage::DrugSearchPage(QWidget* parent)
     : BaseSearchPage(parent),
       drugRepo(Core::ServiceLocator::get<Models::DrugRepository>()),
@@ -69,18 +67,14 @@ void DrugSearchPage::fillModel(const QVector<Models::Drug>& rows) {
         items << new QStandardItem(QString());
         modelPtr->appendRow(items);
     }
-    // shit
     applyActionsDelegateToLastColumn();
 
-    // raw fix
     getTable()->setColumnHidden(0, true);
 }
-// make more complex
 void DrugSearchPage::refresh() {
     if (!drugRepo) return;
     fillModel(drugRepo->allDrugs());
 }
-// file search?
 void DrugSearchPage::filterChanged(const QString& text) {
     if (!drugRepo) return;
     if (text.trimmed().isEmpty()) {
@@ -95,7 +89,6 @@ void DrugSearchPage::filterChanged(const QString& text) {
     }
     fillModel(filtered);
 }
-// store id as class member?
 quint32 DrugSearchPage::slectedDrugId() const {
     const auto* tableView = getTable();
     const auto sel = tableView->selectionModel()->selectedRows();

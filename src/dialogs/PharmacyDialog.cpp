@@ -51,16 +51,11 @@ PharmacyDialog::PharmacyDialog(QWidget* parent)
         reverseGeocode(la, lo);
     });
     getFormLayout()->addRow(mapPicker);
-
-    // setupLayout();
-
-    // Debounced forward geocoding from address
     addressDebounce->setInterval(700);
     addressDebounce->setSingleShot(true);
     connect(addressDebounce, &QTimer::timeout, this, &PharmacyDialog::onAddressDebounced);
     connect(eAddress, &QLineEdit::textEdited, this, [this]() { addressDebounce->start(); });
 
-    // Try to detect approximate user location for new pharmacies
     QTimer::singleShot(0, this, &PharmacyDialog::geolocateByIpIfNeeded);
 }
 
@@ -96,7 +91,7 @@ void PharmacyDialog::reset() {
     lat = 0.0;
     lon = 0.0;
     mapPicker->setLocation(lat, lon);
-    // reset schedule to defaults 08:00-22:00
+
     QVector<QPair<QTime, QTime>> h(7, {QTime(8, 0), QTime(22, 0)});
     schedule->setHours(h);
 }
@@ -110,7 +105,6 @@ void PharmacyDialog::onAccept() {
         QMessageBox::warning(this, tr("Проверка ввода"), tr("Телефон имеет неверный формат."));
         return;
     }
-    // Validate schedule: open < close
     for (int i = 0; i < 7; ++i) {
         const auto* e1 = qobject_cast<QTimeEdit*>(schedule->cellWidget(i, 1));
         const auto* e2 = qobject_cast<QTimeEdit*>(schedule->cellWidget(i, 2));
@@ -184,7 +178,7 @@ void PharmacyDialog::forwardGeocode(const QString& addr) {
 }
 
 void PharmacyDialog::geolocateByIpIfNeeded() {
-    if (lat != 0.0 || lon != 0.0) return;  // already set (edit mode or prefilled)
+    if (lat != 0.0 || lon != 0.0) return;
     const QString key = QProcessEnvironment::systemEnvironment().value("GOOGLE_MAPS_API_KEY");
     if (key.isEmpty()) return;
 

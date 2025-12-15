@@ -8,7 +8,6 @@ constexpr quint32 PHARMACY_DATA_VERSION = 1;
 }
 
 namespace Models {
-// move "pharmacies.bin" to main?
 PharmacyRepository::PharmacyRepository() : BaseRepository("pharmacies.bin") {}
 
 bool PharmacyRepository::load() {

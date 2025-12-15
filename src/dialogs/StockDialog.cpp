@@ -1,7 +1,7 @@
 #include "StockDialog.h"
 
-#include <QMessageBox>
 #include <QCompleter>
+#include <QMessageBox>
 
 #include "../core/ServiceLocator.h"
 #include "../models/DrugRepository.h"
@@ -21,11 +21,9 @@ StockDialog::StockDialog(QWidget* parent)
     cbDrug->setEditable(true);
 
     cbDrug->completer()->setCompletionMode(QCompleter::PopupCompletion);
-
 }
 
 void StockDialog::setInitial(qint64 drugId, quint32 pharmacyId, double price, bool allowChangeDrug) {
-    // Populate options from repositories via Service Locator
     const auto* drugRepo = Core::ServiceLocator::get<Models::DrugRepository>();
     const auto* pharmacyRepo = Core::ServiceLocator::get<Models::PharmacyRepository>();
     if (!drugRepo || !pharmacyRepo) {
@@ -46,14 +44,14 @@ void StockDialog::setInitial(qint64 drugId, quint32 pharmacyId, double price, bo
     if (const int di = cbDrug->findData(drugId); di >= 0) {
         cbDrug->setCurrentIndex(di);
     }
-	if(drugId < 0){
+    if (drugId < 0) {
         cbDrug->setCurrentIndex(-1);
-	}
+    }
     if (const int pi = cbPharmacy->findData(pharmacyId); pi >= 0) {
         cbPharmacy->setCurrentIndex(pi);
     }
     cbDrug->setEnabled(allowChangeDrug);
-    cbPharmacy->setEnabled(false);  // this dialog is usually context of pharmacy
+    cbPharmacy->setEnabled(false);
     spPrice->setValue(price);
 }
 

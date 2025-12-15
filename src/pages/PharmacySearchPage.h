@@ -29,12 +29,9 @@ class PharmacySearchPage : public BaseSearchPage {
     void onRowDelete(int row) override;
 
    private:
-    void setupUi();
     void fillModel() const;
     quint32 currentPharmacyId() const;
     void onHeaderClicked(int section);
-    // void onSortIndicatorChange(int section, Qt::SortOrder ord);
-
 
     void addElement() override;
 

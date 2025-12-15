@@ -3,7 +3,6 @@
 #include "../dialogs/DrugDialog.h"
 #include "../models/DrugRepository.h"
 #include "../models/PharmacyRepository.h"
-
 #include "BaseSearchPage.h"
 
 class DrugSearchPage : public BaseSearchPage {

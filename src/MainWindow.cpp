@@ -12,7 +12,6 @@
 #include "pages/PharmacyDetailsPage.h"
 #include "pages/PharmacySearchPage.h"
 
-
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent),
       stack(new QStackedWidget(this)),

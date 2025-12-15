@@ -41,10 +41,6 @@ void BaseTablePage::setupActionsDelegate() {
 }
 
 void BaseTablePage::applyActionsDelegateToLastColumn() {
-    // for (size_t i = 0; i < model->columnCount() - 2; i++) {
-        // table->setItemDelegateForColumn(model->columnCount() - 2, new QStyledItemDelegate(this));
-    // }
-
     table->setItemDelegateForColumn(model->columnCount() - 1, actionsDelegate);
     auto* hdr = table->horizontalHeader();
     hdr->setSectionResizeMode(QHeaderView::Stretch);

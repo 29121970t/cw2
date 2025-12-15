@@ -7,10 +7,10 @@
 #include <QWebChannel>
 #include <QWebEngineView>
 #include <QWidget>
+
 #include "MapErropView.h"
 
 namespace Widgets {
-
 
 class MapWebView : public QWidget {
     Q_OBJECT

@@ -9,7 +9,7 @@ BaseDialog::BaseDialog(const QString& title, QWidget* parent)
       buttonBox(new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, this)) {
     setWindowTitle(title);
     setupButtons();
-	setupLayout();
+    setupLayout();
 }
 
 void BaseDialog::setupButtons() const {

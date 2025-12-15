@@ -16,9 +16,8 @@ class MainWindow : public QMainWindow {
     Q_OBJECT
    public:
     explicit MainWindow(QWidget* parent = nullptr);
-	bool eventFilter(QObject *obj, QEvent *event) override;
+    bool eventFilter(QObject* obj, QEvent* event) override;
     void selectPreviousPage();
-
 
    private slots:
     void openDrugSearch();
@@ -34,9 +33,7 @@ class MainWindow : public QMainWindow {
     QToolBar* toolbar = nullptr;
     QAction* actionBack = nullptr;
 
-    // pages
     DrugSearchPage* pageDrugs = nullptr;
     PharmacySearchPage* pagePharmaciesForDrug = nullptr;
     PharmacyDetailsPage* pagePharmacyDetails = nullptr;
-
 };

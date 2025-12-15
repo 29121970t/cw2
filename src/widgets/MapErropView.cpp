@@ -1,7 +1,7 @@
 #include "MapErropView.h"
 
 namespace Widgets {
-MapErropView::MapErropView(/* args */)
+MapErropView::MapErropView()
     : errorMassage(new QLabel(this)),
       laPicker(new QDoubleSpinBox{this}),
       loPicker(new QDoubleSpinBox{this}),

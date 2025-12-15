@@ -2,9 +2,9 @@
 
 #include <QHBoxLayout>
 #include <QHeaderView>
+#include <QMessageBox>
 #include <QMouseEvent>
 #include <QVBoxLayout>
-#include <QMessageBox>
 
 #include "../core/ServiceLocator.h"
 #include "../dialogs/PharmacyDialog.h"
@@ -34,7 +34,6 @@ void PharmacyDetailsPage::setupUi() {
     tableView->setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents);
     labelName->setStyleSheet("font-weight: bold; font-size: 18px;");
 
-    // schedule view (read-only)
     scheduleView->setHorizontalHeaderLabels({tr("День"), tr("Время")});
     scheduleView->verticalHeader()->setVisible(false);
     scheduleView->setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -89,7 +88,6 @@ void PharmacyDetailsPage::refresh() {
     labelName->setText(p->name);
     labelAddress->setText(tr("Адрес: %1").arg(p->address));
     labelPhone->setText(tr("Телефон: %1").arg(p->phone));
-    // fill scheduleView with "HH:mm-HH:mm"
     for (int i = 0; i < scheduleView->rowCount() && i < p->hours.size(); ++i) {
         const auto& [openTime, closeTime] = p->hours[i];
         QString text;
@@ -113,8 +111,8 @@ void PharmacyDetailsPage::fillAssortment() {
     if (!pharmacyRepo || !drugRepo) return;
     auto* modelPtr = getModel();
     modelPtr->clear();
-    modelPtr->setHorizontalHeaderLabels({tr("ID преп."), tr("Наименование"), tr("МНН"), tr("Цена"), tr("Производитель"), tr("Форма"),
-	                                  tr("Страна"), QString()});
+    modelPtr->setHorizontalHeaderLabels(
+        {tr("ID преп."), tr("Наименование"), tr("МНН"), tr("Цена"), tr("Производитель"), tr("Форма"), tr("Страна"), QString()});
     for (const auto& s : pharmacyRepo->stocksForPharmacy(pharmacyId)) {
         const auto* d = drugRepo->findDrugConst(s.drugId);
         if (!d) continue;
@@ -157,7 +155,6 @@ quint32 PharmacyDetailsPage::currentSelectedDrugId() const {
 
 void PharmacyDetailsPage::onRowAdd(int) {
     if (!pharmacyRepo) return;
-    // reuse dialog, allow choosing any drug
     stockDlg->setInitial(-1, pharmacyId, 0.0, true);
     if (stockDlg->exec() != QDialog::Accepted) return;
     const auto v = stockDlg->value();

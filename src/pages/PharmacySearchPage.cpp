@@ -51,7 +51,7 @@ PharmacySearchPage::PharmacySearchPage(QWidget* parent)
 
     connect(tbl, &QTableView::doubleClicked, this, &PharmacySearchPage::openDetails);
     connect(tbl->horizontalHeader(), &QHeaderView::sectionClicked, this, &PharmacySearchPage::onHeaderClicked);
-      }
+}
 
 void PharmacySearchPage::setDrug(quint32 id) {
     this->drugId = id;
@@ -227,10 +227,9 @@ void PharmacySearchPage::fillModel() const {
     writeRows(getModel(), rows, priceColumn >= 0);
     if (priceColumn >= 0) {
         getTable()->setColumnHidden(1, false);
-    }
-	else{
+    } else {
         getTable()->setColumnHidden(1, true);
-	}
+    }
 }
 
 void PharmacySearchPage::onHeaderClicked(int section) {
