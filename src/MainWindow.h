@@ -33,6 +33,7 @@ class MainWindow : public QMainWindow {
     QToolBar* toolbar = nullptr;
     QAction* actionBack = nullptr;
 
+
     DrugSearchPage* pageDrugs = nullptr;
     PharmacySearchPage* pagePharmaciesForDrug = nullptr;
     PharmacyDetailsPage* pagePharmacyDetails = nullptr;

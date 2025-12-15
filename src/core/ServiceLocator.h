@@ -21,9 +21,7 @@ class ServiceLocator {
         return static_cast<T*>(it->second.get());
     }
 
-    static void clear() {
-        map().clear();
-    }
+    static void clear() { map().clear(); }
 
    private:
     static std::unordered_map<std::type_index, std::shared_ptr<void>>& map();
