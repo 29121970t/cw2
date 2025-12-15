@@ -1,0 +1,10 @@
+.*
+build/**
+build/
+asyncline/
+diagrams/
+*.puml
+*.docx
+*.py
+*.sh
+*.png
