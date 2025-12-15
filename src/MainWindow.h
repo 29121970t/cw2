@@ -16,7 +16,7 @@ class MainWindow : public QMainWindow {
     Q_OBJECT
    public:
     explicit MainWindow(QWidget* parent = nullptr);
-	bool eventFilter(QObject *obj, QEvent *event);
+	bool eventFilter(QObject *obj, QEvent *event) override;
     void selectPreviousPage();
 
 
@@ -29,7 +29,7 @@ class MainWindow : public QMainWindow {
 
    private:
     void buildUi();
-    void connectSignals();
+    void connectSignals() const;
     QStackedWidget* stack = nullptr;
     QToolBar* toolbar = nullptr;
     QAction* actionBack = nullptr;

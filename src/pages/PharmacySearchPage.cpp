@@ -23,10 +23,6 @@ PharmacySearchPage::PharmacySearchPage(QWidget* parent)
       pharmacyRepo(Core::ServiceLocator::get<Models::PharmacyRepository>()),
       stockDlg(new StockDialog(this)),
       pharmacyDlg(new PharmacyDialog(this)) {
-    setupUi();
-}
-
-void PharmacySearchPage::setupUi() {
     auto* mode = getModeCombo();
     auto& addButton = *getAddButton();
     mode->addItems({tr("По аптеке"), tr("По препарату")});
@@ -37,9 +33,8 @@ void PharmacySearchPage::setupUi() {
     tbl->horizontalHeader()->setSectionsClickable(true);
     tbl->horizontalHeader()->setSortIndicatorShown(true);
 
-    // periodic update of "open/closed" state
     openUpdateTimer = new QTimer(this);
-    openUpdateTimer->setInterval(30000);  // 30s
+    openUpdateTimer->setInterval(30000);
     connect(openUpdateTimer, &QTimer::timeout, this, &PharmacySearchPage::refresh);
     openUpdateTimer->start();
 
@@ -56,8 +51,7 @@ void PharmacySearchPage::setupUi() {
 
     connect(tbl, &QTableView::doubleClicked, this, &PharmacySearchPage::openDetails);
     connect(tbl->horizontalHeader(), &QHeaderView::sectionClicked, this, &PharmacySearchPage::onHeaderClicked);
-    // connect(tbl->horizontalHeader(), &QHeaderView::sortIndicatorChanged, this, &PharmacySearchPage::onSortIndicatorChange);
-}
+      }
 
 void PharmacySearchPage::setDrug(quint32 id) {
     this->drugId = id;

@@ -41,7 +41,7 @@ void MainWindow::buildUi() {
     stack->addWidget(pagePharmacyDetails);
 }
 
-void MainWindow::connectSignals() {
+void MainWindow::connectSignals() const {
     connect(pageDrugs, &DrugSearchPage::openPharmaciesForDrug, this, &MainWindow::openPharmacySearchForDrug);
     connect(pageDrugs, &DrugSearchPage::switchToPharmacySearch, this, &MainWindow::openPharmacySearchWithFilter);
     connect(pagePharmaciesForDrug, &PharmacySearchPage::openPharmacyDetails, this, &MainWindow::openPharmacyDetails);
@@ -88,7 +88,7 @@ void MainWindow::openDrugSearchWithFilter(const QString& query) {
 }
 bool MainWindow::eventFilter(QObject* obj, QEvent* event) {
     if (event->type() == QEvent::MouseButtonRelease && actionBack->isEnabled()) {
-        QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
+        auto mouseEvent = static_cast<QMouseEvent*>(event);
         if (mouseEvent->button() == Qt::BackButton) {
             mouseEvent->accept();
             selectPreviousPage();
