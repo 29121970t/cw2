@@ -22,10 +22,6 @@ class PharmacySearchPage : public BaseSearchPage {
    private slots:
     void refresh();
     void filterChanged(const QString& text) override;
-    void addPharmacy();
-    void editPharmacy();
-    void deletePharmacy();
-    void editPrice();
     void openDetails();
     void modeChanged(int index) override;
     void onRowAdd(int row) override;
@@ -37,6 +33,8 @@ class PharmacySearchPage : public BaseSearchPage {
     void fillModel() const;
     quint32 currentPharmacyId() const;
     void onHeaderClicked(int section);
+    // void onSortIndicatorChange(int section, Qt::SortOrder ord);
+
 
     void addElement() override;
 

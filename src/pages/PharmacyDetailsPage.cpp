@@ -4,11 +4,11 @@
 #include <QHeaderView>
 #include <QMouseEvent>
 #include <QVBoxLayout>
+#include <QMessageBox>
 
 #include "../core/ServiceLocator.h"
 #include "../dialogs/PharmacyDialog.h"
 #include "../dialogs/StockDialog.h"
-
 
 PharmacyDetailsPage::PharmacyDetailsPage(QWidget* parent)
     : BaseTablePage(parent),
@@ -27,10 +27,10 @@ PharmacyDetailsPage::PharmacyDetailsPage(QWidget* parent)
 }
 
 void PharmacyDetailsPage::setupUi() {
-    setupTable();
     auto* tableView = getTable();
     tableView->horizontalHeader()->setSectionsClickable(true);
     tableView->horizontalHeader()->setSortIndicatorShown(true);
+    tableView->setSortingEnabled(true);
     tableView->setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents);
     labelName->setStyleSheet("font-weight: bold; font-size: 18px;");
 
@@ -55,7 +55,7 @@ void PharmacyDetailsPage::setupUi() {
 
     auto left = new QVBoxLayout();
     left->addLayout(top);
-    left->addWidget(scheduleView, 1);
+    left->addWidget(scheduleView, Qt::AlignLeft);
     left->addWidget(btnEditPharmacy);
     left->addWidget(addStockButton);
 
@@ -113,7 +113,8 @@ void PharmacyDetailsPage::fillAssortment() {
     if (!pharmacyRepo || !drugRepo) return;
     auto* modelPtr = getModel();
     modelPtr->clear();
-    modelPtr->setHorizontalHeaderLabels({tr("ID преп."), tr("Наименование"), tr("МНН"), tr("Цена"), QString()});
+    modelPtr->setHorizontalHeaderLabels({tr("ID преп."), tr("Наименование"), tr("МНН"), tr("Цена"), tr("Производитель"), tr("Форма"),
+	                                  tr("Страна"), QString()});
     for (const auto& s : pharmacyRepo->stocksForPharmacy(pharmacyId)) {
         const auto* d = drugRepo->findDrugConst(s.drugId);
         if (!d) continue;
@@ -122,11 +123,13 @@ void PharmacyDetailsPage::fillAssortment() {
         row << new QStandardItem(d->tradeName);
         row << new QStandardItem(d->medicalName);
         row << new QStandardItem(QString::number(s.price, 'f', 2));
+        row << new QStandardItem(d->manufacturer);
+        row << new QStandardItem(d->dosageForm);
+        row << new QStandardItem(d->country);
         row << new QStandardItem(QString());
         modelPtr->appendRow(row);
     }
     applyActionsDelegateToLastColumn();
-    setupActionsDelegate();
     getTable()->hideColumn(0);
 }
 
@@ -155,7 +158,7 @@ quint32 PharmacyDetailsPage::currentSelectedDrugId() const {
 void PharmacyDetailsPage::onRowAdd(int) {
     if (!pharmacyRepo) return;
     // reuse dialog, allow choosing any drug
-    stockDlg->setInitial(0, pharmacyId, 0.0, true);
+    stockDlg->setInitial(-1, pharmacyId, 0.0, true);
     if (stockDlg->exec() != QDialog::Accepted) return;
     const auto v = stockDlg->value();
     pharmacyRepo->setStock(v.pharmacyId, v.drugId, v.price);
@@ -185,7 +188,10 @@ void PharmacyDetailsPage::onRowDelete(int row) {
     selectRow(row);
     const quint32 drugId = currentSelectedDrugId();
     if (!drugId) return;
-    pharmacyRepo->removeStock(pharmacyId, drugId);
-    pharmacyRepo->save();
+    if (QMessageBox::question(this, tr("Удалить"), tr("Удалить выбранный препарат?")) == QMessageBox::Yes) {
+        pharmacyRepo->removeStock(pharmacyId, drugId);
+        pharmacyRepo->save();
+    }
+
     fillAssortment();
 }

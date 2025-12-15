@@ -10,7 +10,7 @@ class StockDialog : public BaseDialog {
 public:
 	explicit StockDialog(QWidget *parent = nullptr);
 
-	void setInitial(quint32 drugId, quint32 pharmacyId, double price, bool allowChangeDrug);
+	void setInitial(qint64 drugId, quint32 pharmacyId, double price, bool allowChangeDrug);
 	Models::Stock value() const;
 
 protected slots:

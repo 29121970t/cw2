@@ -19,65 +19,6 @@ bool PharmacyRepository::save() const {
     return writeToFile([this](QDataStream& out) { return serialize(out); });
 }
 
-void PharmacyRepository::seedSampleData(const QVector<Drug>& drugsSeed) {
-    auto findDrugId = [&drugsSeed](const QString& tradeName) -> quint32 {
-        for (const auto& d : drugsSeed) {
-            if (d.tradeName.compare(tradeName, Qt::CaseInsensitive) == 0) {
-                return d.id;
-            }
-        }
-        return 0;
-    };
-
-    pharmacies.clear();
-    stocks.clear();
-
-    Pharmacy p1;
-    p1.name = "Аптека Новая N1 ООО Пролайф";
-    p1.address = "Бобруйск, ул. Пролетарская, 17-116";
-    p1.phone = "(029) 6130830";
-    p1.latitude = 53.135;
-    p1.longitude = 29.224;
-    Pharmacy p2;
-    p2.name = "Могилевское РУП Фармация Аптека N221";
-    p2.address = "Бобруйск, ул. Минская, 47-23";
-    p2.phone = "(0225) 730755";
-    p2.latitude = 53.152;
-    p2.longitude = 29.205;
-    Pharmacy p3;
-    p3.name = "Аптека Новая N7 ООО Пролайф";
-    p3.address = "Могилев, ул. Первомайская, 48-76";
-    p3.phone = "(029) 6205690";
-    p3.latitude = 53.908;
-    p3.longitude = 30.336;
-
-    for (auto* pp : {&p1, &p2, &p3}) {
-        pp->hours = QVector<QPair<QTime, QTime>>(7);
-        for (int i = 0; i < 7; ++i) {
-            pp->hours[i] = {QTime(8, 0), QTime(22, 0)};
-        }
-    }
-    const auto id1 = findDrugId("НО-ШПА");
-    const auto id2 = findDrugId("НО-ШПА ФОРТЕ");
-    const auto id3 = findDrugId("АНАЛЬГИН");
-
-    p1.id = addPharmacy(p1);
-    p2.id = addPharmacy(p2);
-    p3.id = addPharmacy(p3);
-
-    if (id1) {
-        setStock(p1.id, id1, 9.57);
-        setStock(p2.id, id1, 9.58);
-        setStock(p3.id, id1, 9.57);
-    }
-    if (id2) {
-        setStock(p1.id, id2, 10.50);
-    }
-    if (id3) {
-        setStock(p2.id, id3, 1.20);
-    }
-}
-
 quint32 PharmacyRepository::addPharmacy(const Pharmacy& p) {
     Pharmacy copy = p;
     copy.id = nextPharmacyId();

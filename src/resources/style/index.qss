@@ -52,7 +52,7 @@ QComboBox QAbstractItemView {
 QPushButton {
   background-color: palette(Base);
   border: 1px solid #3a3d41;
-  padding: 6px 10px;
+  padding: 4px 10px;
 }
 
 QPushButton:hover,
@@ -75,7 +75,7 @@ QPushButton[accent="true"],
 /* Стили для спинбоксов */
 QAbstractSpinBox::up-button,
 QAbstractSpinBox::down-button {
-  subcontrol-origin: padding;
+  /* subcontrol-origin: padding; */
   width: 18px;
   border: none;
   background: transparent;

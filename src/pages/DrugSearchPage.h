@@ -2,6 +2,8 @@
 
 #include "../dialogs/DrugDialog.h"
 #include "../models/DrugRepository.h"
+#include "../models/PharmacyRepository.h"
+
 #include "BaseSearchPage.h"
 
 class DrugSearchPage : public BaseSearchPage {
@@ -26,8 +28,9 @@ class DrugSearchPage : public BaseSearchPage {
    private:
     void setupUi();
     void fillModel(const QVector<Models::Drug>& rows);
-    quint32 currentDrugId() const;
+    quint32 slectedDrugId() const;
 
     Models::DrugRepository* drugRepo = nullptr;
+    Models::PharmacyRepository* pharmacyRepo = nullptr;
     DrugDialog* dlg = nullptr;
 };

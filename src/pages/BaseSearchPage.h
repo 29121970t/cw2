@@ -14,8 +14,6 @@ class BaseSearchPage : public BaseTablePage {
     bool getAllowAdd() const { return allowAdd; }
 	void setAllowAdd(bool val)  { allowAdd = val; addButton->setVisible(val);}
    protected:
-    // Common search setup
-    void setupSearch() const;
 
     // Accessors
     QLineEdit* getSearchEdit() const { return searchEdit; }

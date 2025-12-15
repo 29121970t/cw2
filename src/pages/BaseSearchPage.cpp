@@ -6,11 +6,6 @@ BaseSearchPage::BaseSearchPage(QWidget *parent)
 	  searchEdit(new QLineEdit(this)),
 	  addButton(new QPushButton("Добавить", this))
 {
-	setupSearch();
-}
-
-void BaseSearchPage::setupSearch() const
-{
 	connect(searchEdit, &QLineEdit::textChanged, this, &BaseSearchPage::filterChanged);
 	connect(modeCombo, qOverload<int>(&QComboBox::currentIndexChanged), this, &BaseSearchPage::modeChanged);
 	connect(addButton, &QPushButton::released, this, &BaseSearchPage::addElement);

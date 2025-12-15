@@ -27,7 +27,6 @@ DrugDialog::DrugDialog(QWidget *parent)
 	getFormLayout()->addRow(tr("Страна"), eCountry);
 	getFormLayout()->addRow(cbRx);
 
-	setupLayout();
 }
 
 void DrugDialog::setValue(const Models::Drug &d)

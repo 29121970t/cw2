@@ -1,13 +1,8 @@
+<!DOCTYPE RCC>
 <RCC>
-    <qresource prefix="/map">
-        <file>embedded.html</file>
-        <file>embedded.css</file>
-        <file>error.html</file>
-        <file>error.css</file>
-        <file>error.js</file>
-        <file>interactive.html</file>
-        <file>interactive.css</file>
-        <file>interactive.js</file>
-    </qresource>
+  <qresource prefix="/map">
+    <file>interactive.html</file>
+    <file>interactive.css</file>
+    <file>interactive.js</file>
+  </qresource>
 </RCC>
-

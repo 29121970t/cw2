@@ -49,16 +49,6 @@ bool DrugRepository::save() const
 	});
 }
 
-void DrugRepository::seedSampleData()
-{
-	drugs.clear();
-	Drug d1; d1.tradeName="НО-ШПА"; d1.medicalName="Дротаверин"; d1.manufacturer="Хиноин"; d1.dosageForm="таблетки 40мг N24"; d1.country="Венгрия"; d1.prescriptionRequired=false;
-	Drug d2; d2.tradeName="НО-ШПА ФОРТЕ"; d2.medicalName="Дротаверин"; d2.manufacturer="Хиноин"; d2.dosageForm="таблетки 80мг N24"; d2.country="Венгрия"; d2.prescriptionRequired=false;
-	Drug d3; d3.tradeName="АНАЛЬГИН"; d3.medicalName="Метамизол натрия"; d3.manufacturer="Борисовский ЗМП"; d3.dosageForm="таблетки 500мг N10"; d3.country="Беларусь"; d3.prescriptionRequired=false;
-	addDrug(d1);
-	addDrug(d2);
-	addDrug(d3);
-}
 
 quint32 DrugRepository::addDrug(const Drug &d)
 {

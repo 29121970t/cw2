@@ -69,15 +69,6 @@ int main(int argc, char* argv[]) {
         bool drugLoaded = drugRepo->load();
         bool pharmacyLoaded = pharmacyRepo->load();
 
-        if (!drugLoaded) {
-            drugRepo->seedSampleData();
-            drugRepo->save();
-        }
-        if (!pharmacyLoaded) {
-            pharmacyRepo->seedSampleData(drugRepo->allDrugs());
-            pharmacyRepo->save();
-        }
-
         Core::ServiceLocator::registerService<Models::DrugRepository>(drugRepo);
         Core::ServiceLocator::registerService<Models::PharmacyRepository>(pharmacyRepo);
 

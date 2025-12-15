@@ -14,7 +14,6 @@ public:
 
 	bool load();
 	bool save() const;
-	void seedSampleData(const QVector<Drug> &drugs);
 
 	const QVector<Pharmacy>& allPharmacies() const { return pharmacies; }
 	const QVector<Stock>& allStocks() const { return stocks; }
