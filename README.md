@@ -9,7 +9,7 @@
 
 ## Уствновка
 1. Получите ключ GOOGLE maps Api [developers.google.com](https://developers.google.com/maps/documentation/javascript/get-api-key)
-2. Установитезависимости
+2. Установите зависимости
     ```bash
     sudo pacman -S qt6-base qt6-webengine cmake
     ```
