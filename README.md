@@ -1,7 +1,11 @@
-## О проекте
+## Про Лекарства
 Простая информационная система лекарственных препаратов, написанная на C++ с использованием Qt6
 
+## Галерея
 
+![Окно аптеки](https://raw.githubusercontent.com/29121970t/cw2/main/assets/pharmacy.png)
+
+![Окно аптеки](https://raw.githubusercontent.com/29121970t/cw2/main/assets/search.png)
 ## Уствновка
 1. Получите ключ GOOGLE maps Api [developers.google.com](https://developers.google.com/maps/documentation/javascript/get-api-key)
 2. Установитезависимости
