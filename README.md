@@ -3,9 +3,9 @@
 
 ## Галерея
 
-![Окно аптеки](https://raw.githubusercontent.com/29121970t/cw2/main/assets/pharmacy.png)
+![Окно аптеки](https://raw.githubusercontent.com/29121970t/cw2/main/img/pharmacy.png)
 
-![Окно аптеки](https://raw.githubusercontent.com/29121970t/cw2/main/assets/search.png)
+![Окно аптеки](https://raw.githubusercontent.com/29121970t/cw2/main/img/search.png)
 ## Уствновка
 1. Получите ключ GOOGLE maps Api [developers.google.com](https://developers.google.com/maps/documentation/javascript/get-api-key)
 2. Установитезависимости
